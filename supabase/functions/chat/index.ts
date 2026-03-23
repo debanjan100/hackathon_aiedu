@@ -1,0 +1,57 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+
+const API_KEY = Deno.env.get('GROQ_API_KEY')
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders })
+  }
+
+  try {
+    const { message, context } = await req.json()
+    
+    // Fetch directly from Groq using Llama-3
+    const response = await fetch(`https://api.groq.com/openai/v1/chat/completions`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model: "llama-3.1-8b-instant", // The upgraded Llama 3.1 architecture on Groq
+        messages: [
+          { role: "system", content: context },
+          { role: "user", content: message }
+        ],
+        temperature: 0.7
+      }),
+    })
+    
+    const data = await response.json()
+    
+    // Explicitly check for Groq's error object first
+    if (data.error) {
+      throw new Error(`Groq API Error: ${data.error.message || JSON.stringify(data.error)}`);
+    }
+
+    const botReply = data.choices?.[0]?.message?.content;
+    if (!botReply) {
+      throw new Error(`Edge Error. Raw Groq Response: ${JSON.stringify(data)}`);
+    }
+    
+    return new Response(JSON.stringify({ reply: botReply }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200
+    })
+  } catch (error) {
+    // Return 200 so the frontend SDK reads the JSON body instead of throwing a generic "non-2xx" exception
+    return new Response(JSON.stringify({ error: error.message }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      status: 200,
+    })
+  }
+})

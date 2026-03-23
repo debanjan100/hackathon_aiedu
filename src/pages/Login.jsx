@@ -6,20 +6,6 @@ import { useAuth } from '../context/AuthContext';
 
 const { Title, Text } = Typography;
 
-// --- Mock Auth Logic (replace with real API calls to Node.js backend) ---
-const mockLogin = async ({ email, password }) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Simulate a registered "demo" user
-      if (email === 'demo@aiedu.com' && password === 'password123') {
-        resolve({ user: { name: 'Demo User', email, skillLevel: 'Intermediate' }, token: 'mock-jwt-token-abc123' });
-      } else {
-        resolve(null); // Wrong credentials
-      }
-    }, 800);
-  });
-};
-
 const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -27,14 +13,14 @@ const Login = () => {
 
   const onFinish = async (values) => {
     setLoading(true);
-    const result = await mockLogin(values);
-    setLoading(false);
-    if (result) {
-      login(result.user, result.token);
+    try {
+      await login(values.email, values.password);
       antMessage.success('Welcome back! Redirecting to dashboard...', 2);
-      setTimeout(() => navigate('/'), 500);
-    } else {
-      antMessage.error('Invalid email or password. Try demo@aiedu.com / password123');
+      setTimeout(() => navigate('/dashboard'), 500);
+    } catch (err) {
+      antMessage.error(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 

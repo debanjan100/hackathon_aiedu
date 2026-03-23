@@ -1,7 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { Typography, Card, Tag, Select, Row, Col, Button, Input, message } from 'antd';
-import { BookOpen, AlertCircle, PlayCircle, Download, Search, Filter } from 'lucide-react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { BookOpen, AlertCircle, PlayCircle, Download, Search, Filter, Mic } from 'lucide-react';
+import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const { Title, Text } = Typography;
@@ -67,6 +67,8 @@ const topics = ['All', 'Arrays', 'Matrix', 'String', 'Searching & Sorting', 'Lin
 const Course = () => {
   const { topicId } = useParams();
   const navigate = useNavigate();
+  // Fetch the context method from the MainLayout to open the mock interview drawer
+  const { openMockInterview } = useOutletContext() || {};
   
   const initialTopic = topicId && topicId !== 'practice' 
     ? topics.find(t => t.toLowerCase().includes(topicId)) || 'All' 
@@ -187,14 +189,24 @@ const Course = () => {
                     {item.q}
                   </Title>
                   
-                  <Button 
-                    type="primary" 
-                    ghost 
-                    icon={<PlayCircle size={16} />}
-                    style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', borderRadius: 8, width: '100%' }}
-                  >
-                    Start Solving
-                  </Button>
+                  <div style={{ display: 'flex', gap: 8 }}>
+                     <Button 
+                       type="primary" 
+                       ghost 
+                       icon={<PlayCircle size={16} />}
+                       style={{ borderColor: 'var(--primary-color)', color: 'var(--primary-color)', borderRadius: 8, flex: 1 }}
+                       onClick={() => message.success(`Initializing Web IDE for: ${item.q}...`)}
+                     >
+                       Solve
+                     </Button>
+                     <Button 
+                       style={{ background: '#faad14', color: '#000', border: 'none', borderRadius: 8, flex: 1 }}
+                       icon={<Mic size={16} />}
+                       onClick={() => openMockInterview ? openMockInterview(item.q) : message.info("Opening Interview Mode...")}
+                     >
+                       Interview
+                     </Button>
+                  </div>
                 </Card>
               </motion.div>
             </Col>

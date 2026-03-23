@@ -1,14 +1,30 @@
-import React, { useState } from 'react';
-import { Row, Col, Card, Typography, Select, Progress, List, Tag, Badge, Button } from 'antd';
+import React, { useState, useEffect } from 'react';
+import { Row, Col, Card, Typography, Select, Progress, List, Tag, Badge, Button, message } from 'antd';
 import { TrendingUp, Award, Calendar, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Title, Text } = Typography;
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, login, token } = useAuth();
   const navigate = useNavigate();
+  const [xp, setXp] = useState(0);
+
+  useEffect(() => {
+    if (user?.id) {
+       supabase.from('progress').select('xp_gained').eq('user_id', user.id)
+            .then(({ data }) => {
+               if (data && data.length > 0) {
+                 const totalXp = data.reduce((acc, curr) => acc + (curr.xp_gained || 0), 0);
+                 setXp(totalXp);
+               }
+            })
+            .catch(err => console.error(err));
+    }
+  }, [user]);
 
   const topicScores = [
     { name: 'Trees & Graphs', score: 35, path: 'trees' },
@@ -20,6 +36,48 @@ const Dashboard = () => {
     if (score < 50) return { text: 'Focus here: Fundamentals needed.', color: '#ff4d4f' };
     if (score < 80) return { text: 'Doing well! Practice harder problems.', color: '#faad14' };
     return { text: 'Excellent! Ready for mock interviews.', color: '#52c41a' };
+  };
+
+  const handlePremium = async () => {
+    try {
+      // Direct integration with the Supabase Serverless payment module
+      const { data: orderData, error: orderErr } = await supabase.functions.invoke('payment', {
+        body: { action: 'create-order' }
+      });
+      if (orderErr) throw orderErr;
+
+      const options = {
+        key: 'rzp_test_mock', // using mock key for the checkout widget demo
+        amount: orderData.amount,
+        currency: orderData.currency,
+        name: 'AI Edu Premium',
+        description: 'Lifetime Mock Interviews',
+        order_id: orderData.id,
+        handler: async function (response) {
+           const { data: verificationData, error: verifyErr } = await supabase.functions.invoke('payment', {
+             body: { action: 'verify-payment', ...response, userId: user?.id }
+           });
+           
+           if (!verifyErr && verificationData?.success) {
+               // Update actual database user
+               await supabase.from('users').update({ isPremium: true }).eq('id', user.id);
+               message.success('Premium Unlocked! 🎉');
+               if (login && token) {
+                 login({ ...user, isPremium: true }, token);
+               }
+           } else {
+               message.error('Payment verification failed securely.');
+           }
+        },
+        prefill: { name: user?.name, email: user?.email },
+        theme: { color: '#00f2fe' }
+      };
+      
+      const rzp1 = new window.Razorpay(options);
+      rzp1.open();
+    } catch(err) {
+      message.error("Could not initiate payment system on edge.");
+    }
   };
 
   return (
@@ -92,7 +150,7 @@ const Dashboard = () => {
                 { name: 'Alice JS', xp: '14,200', rank: 1, color: '#faad14' },
                 { name: 'Bob React', xp: '12,400', rank: 2, color: '#d4af37' },
                 { name: 'Charlie Code', xp: '10,100', rank: 3, color: '#cd7f32' },
-                { name: user?.name || 'You', xp: '8,450', rank: 42, color: '#00f2fe' }
+                { name: user?.name || 'You', xp: xp.toLocaleString(), rank: 42, color: '#00f2fe' }
               ]}
               renderItem={item => (
                 <List.Item style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '12px 0' }}>
@@ -145,21 +203,23 @@ const Dashboard = () => {
       </Row>
 
       {/* Premium Course Upsell Box */}
-      <Card className="glass-card" style={{ marginTop: 24, background: 'rgba(0,0,0,0.2)' }} bordered={false}>
-        <Row justify="space-between" align="middle">
-          <Col>
-            <Title level={4} style={{ color: '#faad14', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Award size={20} /> Upgrade to AI Premium
-            </Title>
-            <Text style={{ color: '#94a3b8' }}>Get access to 1-on-1 AI mock interviews and unlimited course downloads.</Text>
-          </Col>
-          <Col>
-            <Button size="large" style={{ background: '#faad14', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: 8 }}>
-              Get Premium - ₹499
-            </Button>
-          </Col>
-        </Row>
-      </Card>
+      {!user?.isPremium && (
+        <Card className="glass-card" style={{ marginTop: 24, background: 'rgba(0,0,0,0.2)' }} bordered={false}>
+          <Row justify="space-between" align="middle">
+            <Col>
+              <Title level={4} style={{ color: '#faad14', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                <Award size={20} /> Upgrade to AI Premium
+              </Title>
+              <Text style={{ color: '#94a3b8' }}>Get access to 1-on-1 AI mock interviews and unlimited course downloads.</Text>
+            </Col>
+            <Col>
+              <Button size="large" onClick={handlePremium} style={{ background: '#faad14', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: 8 }}>
+                Get Premium - ₹499
+              </Button>
+            </Col>
+          </Row>
+        </Card>
+      )}
     </div>
   );
 };

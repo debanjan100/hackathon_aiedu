@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Row, Col, Card, Typography, Select } from 'antd';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from 'recharts';
 import { BarChart2, Activity } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Title, Text } = Typography;
 
@@ -22,6 +24,29 @@ const timeData = [
 ];
 
 const Analytics = () => {
+  const { user } = useAuth();
+  const [dynAccuracy, setDynAccuracy] = useState(accuracyData);
+
+  useEffect(() => {
+    if (!user) return;
+    const fetchAnalytics = async () => {
+      const { data, error } = await supabase
+        .from('progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: true })
+        .limit(6);
+        
+      if (!error && data && data.length > 0) {
+        // Map Postgres rows to chart (assume column `accuracy` exists)
+        setDynAccuracy(data.map((row, i) => ({
+          name: 'Week ' + (i+1), accuracy: row.accuracy || 70, avg: 65
+        })));
+      }
+    };
+    fetchAnalytics();
+  }, [user]);
+
   return (
     <div className="analytics-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
@@ -40,7 +65,7 @@ const Analytics = () => {
           <Card className="glass-card" title={<><Activity size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#52c41a' }}/><span style={{ color: '#fff'}}>Accuracy Improvement</span></>} bordered={false}>
             <div style={{ height: 350, width: '100%' }}>
               <ResponsiveContainer>
-                <LineChart data={accuracyData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <LineChart data={dynAccuracy} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <YAxis axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(val) => `${val}%`} tick={{ fill: '#94a3b8' }} />

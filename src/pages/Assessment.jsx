@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
-import { Card, Typography, Radio, Button, Steps, Result } from 'antd';
+import { Card, Typography, Radio, Button, Steps, Result, message } from 'antd';
 import { BrainCircuit, CheckCircle } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Title, Paragraph } = Typography;
 
@@ -18,14 +21,30 @@ const Assessment = () => {
   const [score, setScore] = useState(0);
   const [finished, setFinished] = useState(false);
 
-  const handleNext = () => {
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleNext = async () => {
+    let newScore = score;
     if (selectedOption === questions[current].answer) {
-      setScore(score + 1);
+      newScore = score + 1;
+      setScore(newScore);
     }
     setSelectedOption(null);
     if (current < questions.length - 1) {
       setCurrent(current + 1);
     } else {
+      const derivedLevel = newScore === 3 ? 'Advanced' : newScore === 2 ? 'Intermediate' : 'Beginner';
+      if (user) {
+         const { error } = await supabase
+           .from('users')
+           .update({ skill_level: derivedLevel })
+           .eq('id', user.id);
+         
+         if (error && !error.message.includes('fetch')) {
+            message.error("Failed to sync skill level to Postgres");
+         }
+      }
       setFinished(true);
     }
   };
@@ -45,9 +64,9 @@ const Assessment = () => {
                 <Title level={4} style={{ color: '#fff' }}>
                   Assigned Skill Level: <span style={{ color: '#00f2fe' }}>{currentLevel}</span>
                 </Title>
-                <Paragraph style={{ color: '#e2e8f0' }}>Your learning path has been dynamically updated based on these results.</Paragraph>
+                <Paragraph style={{ color: '#e2e8f0' }}>Your learning path has been physically synced to the Postgres database.</Paragraph>
               </div>,
-              <Button className="gradient-btn" size="large" key="console" onClick={() => window.location.href = '/'}>
+              <Button className="gradient-btn" size="large" key="console" onClick={() => navigate('/dashboard')}>
                 Go to Dashboard
               </Button>
             ]}
