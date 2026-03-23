@@ -8,19 +8,20 @@ const { Title, Text } = Typography;
 
 const Signup = () => {
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { signup } = useAuth();
   const navigate = useNavigate();
 
   const onFinish = async (values) => {
     setLoading(true);
-    // Simulate API call
-    await new Promise(r => setTimeout(r, 1000));
-    setLoading(false);
-    // Mock success: log them in immediately
-    const userData = { name: values.name, email: values.email, skillLevel: values.skillLevel || 'Beginner' };
-    login(userData, 'new-mock-jwt-token');
-    antMessage.success('Account created! Welcome to AI Edu 🎓', 2);
-    setTimeout(() => navigate('/assessment'), 500);
+    try {
+      await signup(values.email, values.password, values.name);
+      antMessage.success('Account created! Welcome to AI Edu 🎓', 2);
+      setTimeout(() => navigate('/dashboard'), 500);
+    } catch (err) {
+      antMessage.error(err.message || 'Failed to create account. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

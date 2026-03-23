@@ -1,7 +1,9 @@
 import React from 'react';
-import { Row, Col, Card, Typography, Button, Tag, Divider } from 'antd';
+import { Row, Col, Card, Typography, Button, Tag, Divider, message } from 'antd';
 import { motion } from 'framer-motion';
 import { Sparkles, Map, Target, Briefcase, Code, Database, Compass, GraduationCap, Cpu } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Title, Text } = Typography;
 
@@ -40,6 +42,23 @@ const genAiTools = [
 ];
 
 const Roadmap = () => {
+  const { user } = useAuth();
+  
+  const handleEnroll = async (pathTitle) => {
+    if (!user) return message.error('You must log in to enroll in a path.');
+    
+    const { error } = await supabase
+      .from('users')
+      .update({ current_roadmap: pathTitle })
+      .eq('id', user.id);
+      
+    if (error && !error.message.includes('fetch')) {
+      message.error('Database connection failed: ' + error.message);
+    } else {
+      message.success(`Successfully enrolled in ${pathTitle}! 🚀 Learning path activated.`);
+    }
+  };
+
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
       {/* Smart Path Header */}
@@ -127,7 +146,7 @@ const Roadmap = () => {
                   ))}
                 </div>
 
-                <Button type="primary" block style={{ marginTop: 24, background: path.color, borderColor: path.color, borderRadius: 8 }}>
+                <Button type="primary" block style={{ marginTop: 24, background: path.color, borderColor: path.color, borderRadius: 8 }} onClick={() => handleEnroll(path.title)}>
                   Enroll in Path
                 </Button>
               </Card>

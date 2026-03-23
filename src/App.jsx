@@ -1,4 +1,5 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
@@ -17,33 +18,47 @@ const ProtectedRoute = ({ children }) => {
   return isLoggedIn ? children : <Navigate to="/login" replace />;
 };
 
+const pageVariants = {
+  initial: { opacity: 0, scale: 0.98, y: 10 },
+  in: { opacity: 1, scale: 1, y: 0 },
+  out: { opacity: 0, scale: 1.02, y: -10 }
+};
+
+const PageWrapper = ({ children }) => (
+  <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="page-transition-wrapper">
+    {children}
+  </motion.div>
+);
+
 function AppRoutes() {
   const { isLoggedIn } = useAuth();
+  const location = useLocation();
 
   return (
-    <Routes>
-      <Route path="/" element={isLoggedIn ? <Navigate to="/dashboard" replace /> : <Landing />} />
-      <Route path="/login" element={<Login />} />
-      <Route path="/signup" element={<Signup />} />
-      <Route
-        path="/dashboard"
-        element={
-          <ProtectedRoute>
-            <MainLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route index element={<Dashboard />} />
-        <Route path="profile" element={<Profile />} />
-        <Route path="assessment" element={<Assessment />} />
-        <Route path="analytics" element={<Analytics />} />
-        <Route path="planner" element={<StudyPlanner />} />
-        <Route path="roadmap" element={<Roadmap />} />
-        <Route path="course/:topicId" element={<Course />} />
-      </Route>
-      {/* Catch-all to redirect old / routes to /dashboard if logged in */}
-      <Route path="*" element={<Navigate to="/" replace />} />
-    </Routes>
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname.split('/')[1] || '/'}>
+        <Route path="/" element={<PageWrapper>{isLoggedIn ? <Navigate to="/dashboard" replace /> : <Landing />}</PageWrapper>} />
+        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
+        <Route path="/signup" element={<PageWrapper><Signup /></PageWrapper>} />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute>
+              <MainLayout />
+            </ProtectedRoute>
+          }
+        >
+          <Route index element={<PageWrapper><Dashboard /></PageWrapper>} />
+          <Route path="profile" element={<PageWrapper><Profile /></PageWrapper>} />
+          <Route path="assessment" element={<PageWrapper><Assessment /></PageWrapper>} />
+          <Route path="analytics" element={<PageWrapper><Analytics /></PageWrapper>} />
+          <Route path="planner" element={<PageWrapper><StudyPlanner /></PageWrapper>} />
+          <Route path="roadmap" element={<PageWrapper><Roadmap /></PageWrapper>} />
+          <Route path="course/:topicId" element={<PageWrapper><Course /></PageWrapper>} />
+        </Route>
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </AnimatePresence>
   );
 }
 

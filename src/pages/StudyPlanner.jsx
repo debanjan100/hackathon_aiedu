@@ -1,37 +1,62 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Typography, Card, Input, Button, List, Row, Col, Progress, Calendar, Badge, Tag, message } from 'antd';
 import { Calendar as CalendarIcon, Plus, Trash2, GripVertical, Bell } from 'lucide-react';
 import dayjs from 'dayjs';
+import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Title, Text } = Typography;
 
 const StudyPlanner = () => {
-  const [tasks, setTasks] = useState([
-    { id: '1', text: 'Complete Arrays & Hashing', date: dayjs().format('YYYY-MM-DD'), color: 'processing' },
-    { id: '2', text: 'Watch React Hooks video', date: dayjs().add(1, 'day').format('YYYY-MM-DD'), color: 'success' },
-    { id: '3', text: 'Attempt Weekly Mock', date: dayjs().add(2, 'day').format('YYYY-MM-DD'), color: 'warning' },
-    { id: '4', text: 'Review DP Patterns', date: null, color: 'default' } // Unscheduled
-  ]);
+  const { user } = useAuth();
+  const [tasks, setTasks] = useState([]);
   const [newTask, setNewTask] = useState('');
 
-  const handleAddTask = () => {
-    if (!newTask.trim()) return;
-    setTasks([...tasks, { id: Date.now().toString(), text: newTask, date: null, color: 'default' }]);
-    setNewTask('');
-    message.success('Task Added! Drag it to the calendar to schedule.');
+  useEffect(() => {
+    if (user?.id) {
+      supabase.from('tasks').select('*').eq('user_id', user.id)
+        .then(({ data, error }) => { if (data) setTasks(data); })
+    }
+  }, [user]);
+
+  const handleAddTask = async () => {
+    if (!newTask.trim() || !user) return;
+    try {
+      const { data, error } = await supabase.from('tasks').insert([
+        { user_id: user.id, text: newTask, date: null, color: 'default' }
+      ]).select().single();
+      
+      if (error) throw error;
+      setTasks([...tasks, data]);
+      setNewTask('');
+      message.success('Task Added! Drag it to the calendar to schedule.');
+    } catch(err) { 
+      message.error('Failed to add task'); 
+    }
   };
 
-  const removeTask = (id) => {
-    setTasks(tasks.filter(t => t.id !== id));
+  const removeTask = async (id) => {
+    try {
+      await supabase.from('tasks').delete().eq('id', id);
+      setTasks(tasks.filter(t => t.id !== id));
+    } catch(err) {
+      message.error('Failed to delete task');
+    }
   };
 
   const onDragStart = (e, taskId) => { e.dataTransfer.setData('taskId', taskId); };
   
-  const onDrop = (e, dateStr) => {
+  const onDrop = async (e, dateStr) => {
     e.preventDefault();
     const taskId = e.dataTransfer.getData('taskId');
-    setTasks(tasks.map(t => t.id === taskId ? { ...t, date: dateStr, color: 'processing' } : t));
-    message.success('Task Scheduled!');
+    try {
+      const { data, error } = await supabase.from('tasks').update({ date: dateStr, color: 'processing' }).eq('id', taskId).select().single();
+      if (error) throw error;
+      setTasks(tasks.map(t => t.id === taskId ? data : t));
+      message.success('Task Scheduled!');
+    } catch(err) {
+      message.error('Failed to schedule task');
+    }
   };
   const onDragOver = (e) => e.preventDefault();
 

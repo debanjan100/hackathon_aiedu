@@ -18,25 +18,13 @@ import {
   Compass
 } from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Header, Sider, Content } = Layout;
 const { Title } = Typography;
-
-const getSmartAIResponse = (input) => {
-  const lowerInput = input.toLowerCase();
-  if (lowerInput.includes('stack')) return "A Stack is LIFO (Last In First Out). Think of stacking plates — you always pick from the top! 🍽️";
-  if (lowerInput.includes('queue')) return "A Queue is FIFO (First In First Out). Like a ticket counter — first come, first served! 🎫";
-  if (lowerInput.includes('linked list')) return "A Linked List is a series of nodes, each pointing to the next. Unlike arrays, they're dynamic in size! 🔗";
-  if (lowerInput.includes('tree')) return "A Tree in DSA represents hierarchical data. We have Root, Nodes, and Leaves. Need help with traversal (Inorder, Preorder, Postorder)? 🌳";
-  if (lowerInput.includes('recursion')) return "Recursion is when a function calls itself with a smaller problem until reaching a base case! 🔄";
-  if (lowerInput.includes('react')) return "React uses a Virtual DOM to optimize rendering. Key concepts: JSX, Components, Props, State, Hooks! ⚛️";
-  if (lowerInput.includes('graph')) return "Graphs have vertices (nodes) and edges. Traversal: BFS (queue-based) and DFS (stack-based). Used in maps, social networks! 🗺️";
-  if (lowerInput.includes('sql')) return "SQL is the language for relational databases. Key commands: SELECT, INSERT, UPDATE, DELETE, and JOIN! 🗃️";
-  if (lowerInput.includes('machine learning') || lowerInput.includes('ml')) return "Machine Learning teaches computers to learn from data. 3 key types: Supervised, Unsupervised, and Reinforcement Learning! 🤖";
-  return "Great question! I'm your AI Tutor. Ask me about DSA (Trees, Stacks, Graphs), React, SQL, Machine Learning, or any Class 11/12 topic! 💡";
-};
 
 const MainLayout = () => {
   const [collapsed, setCollapsed] = useState(false);
@@ -55,69 +43,80 @@ const MainLayout = () => {
   const location = useLocation();
 
   const [messages, setMessages] = useState([
-    { sender: 'ai', text: `Hi ${user?.name || 'there'}! 👋 I'm your AI Tutor. Ask me anything about DSA, React, SQL, or your Class 11/12 topics!` }
+    { sender: 'ai', text: `Hi ${user?.name?.split(' ')[0] || 'there'}! 👋 I'm your AI Tutor. Ask me anything about DSA, React, SQL, or your Class 11/12 topics!` }
   ]);
 
-  // Timer Effect
+  // Timer Effect containing Pomodoro XP Logic (every 60s)
   useEffect(() => {
     let interval;
     if (isTimerActive) {
-      interval = setInterval(() => setTimer(t => t + 1), 1000);
+      interval = setInterval(() => {
+        setTimer(t => {
+          const newT = t + 1;
+          if (newT > 0 && newT % 60 === 0 && user?.id) {
+             axios.post("http://localhost:5000/progress/add", { userId: user.id, amount: 10 })
+                  .then(() => message.success('Stayed focused! +10 XP 🔥'))
+                  .catch(() => null);
+          }
+          return newT;
+        });
+      }, 1000);
     }
     return () => clearInterval(interval);
-  }, [isTimerActive]);
+  }, [isTimerActive, user]);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isTyping]);
 
-  const typeEffect = (fullString) => {
-    let index = 0;
-    setMessages((prev) => [...prev, { sender: 'ai', text: '', isTyping: true }]);
-    const interval = setInterval(() => {
-      setMessages((prev) => {
-        const newMessages = [...prev];
-        newMessages[newMessages.length - 1] = { ...newMessages[newMessages.length - 1], text: fullString.substring(0, index + 1) };
-        return newMessages;
-      });
-      index++;
-      if (index === fullString.length) { clearInterval(interval); setMessages((prev) => { const nm = [...prev]; nm[nm.length - 1].isTyping = false; return nm; }); }
-    }, 22);
-  };
-
-  const handleSendMessage = async () => {
-    if (!chatInput) return;
-
-    const userMsg = { sender: "user", text: chatInput };
-    setMessages(prev => [...prev, userMsg]);
+  const handleSendMessageLogic = async (textToSend, currentMessages) => {
     setIsTyping(true);
+    setMessages(currentMessages);
+    
+    // Map existing history to Gemini structured content
+    const contents = currentMessages.map(msg => ({
+      role: msg.sender === 'ai' ? 'model' : 'user',
+      parts: [{ text: msg.text }]
+    }));
 
     try {
-      const res = await fetch("http://localhost:5000/chat", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ message: chatInput })
-      });
-
-      const data = await res.json();
+      let responseText = "";
+      // If deployed with Supabase, hit the Edge Function
+      if (import.meta.env.VITE_SUPABASE_URL) {
+         const { data, error } = await supabase.functions.invoke('chat', {
+            body: { message: textToSend, context: "Act as an incredibly intelligent DSA and tech mentor. Answer concisely." }
+         });
+         
+         if (error) throw error;
+         if (data.error) throw new Error(data.error); // Catch explicit 200-level edge exits
+         
+         responseText = data.reply;
+      } else {
+         // Local fallback
+         const res = await axios.post("http://localhost:5000/chat", { contents });
+         responseText = res.data.reply;
+      }
+      
       setIsTyping(false);
-
-      setMessages(prev => [
-        ...prev,
-        { sender: "ai", text: data.reply }
-      ]);
-
-    } catch {
+      setMessages(prev => [...prev, { sender: "ai", text: responseText }]);
+    } catch (err) {
       setIsTyping(false);
-      setMessages(prev => [
-        ...prev,
-        { sender: "ai", text: "Server error 😓" }
-      ]);
+      setMessages(prev => [...prev, { sender: "ai", text: `Connection Error: ${err.message || 'Unknown network error. Check console.'}` }]);
     }
+  };
 
+  const handleSendMessage = () => {
+    if (!chatInput.trim()) return;
+    const userMsg = { sender: "user", text: chatInput };
     setChatInput("");
+    handleSendMessageLogic(chatInput, [...messages, userMsg]);
+  };
+
+  const openMockInterview = (topic) => {
+    setChatOpen(true);
+    const prompt = `System Hint: Start a mock DSA interview with me on the topic of ${topic}. Act strictly as a FAANG interviewer. Ask me one technical interview question on this topic. Do not provide code solutions yourself. Evaluate my logic. Keep it conversational.`;
+    const newMsg = { sender: 'user', text: prompt };
+    handleSendMessageLogic(prompt, [...messages, newMsg]);
   };
 
   const handleLogout = () => { logout(); message.success('Logged out!'); navigate('/login'); };
@@ -156,7 +155,7 @@ const MainLayout = () => {
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {/* LeetCode Style Study Timer */}
+            {/* LeetCode Style Study Timer (Pomodoro XP trigger) */}
             <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.1)', padding: '4px 12px', borderRadius: 20, border: '1px solid rgba(0,242,254,0.3)' }}>
               <span style={{ fontFamily: 'monospace', fontSize: 16, color: '#00f2fe', marginRight: 8 }}>
                 {String(Math.floor(timer / 60)).padStart(2, '0')}:{String(timer % 60).padStart(2, '0')}
@@ -179,7 +178,7 @@ const MainLayout = () => {
           </div>
         </Header>
         <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, borderRadius: 8, overflow: 'auto' }}>
-          <Outlet />
+          <Outlet context={{ openMockInterview }} />
         </Content>
       </Layout>
 
@@ -198,15 +197,19 @@ const MainLayout = () => {
       <Drawer
         rootClassName="glass-drawer"
         title={<><Sparkles size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#00f2fe' }}/>AI Chat Tutor</>}
-        placement="right" onClose={() => setChatOpen(false)} open={chatOpen} width={380}
+        placement="right" onClose={() => setChatOpen(false)} open={chatOpen} width={400}
         styles={{ body: { display: 'flex', flexDirection: 'column', padding: 0 } }}
       >
         <div style={{ flex: 1, padding: 20, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-          {messages.map((msg, idx) => (
-            <div key={idx} className={msg.sender === 'user' ? 'chat-message chat-user' : 'chat-message chat-ai'}>
-              {msg.text}{msg.isTyping && <span style={{ animation: 'blink 1s step-end infinite' }}>|</span>}
-            </div>
-          ))}
+          {messages.map((msg, idx) => {
+            // Hide the system prompt from the user interface
+            if (msg.text.startsWith('System Hint:')) return null;
+            return (
+              <div key={idx} className={msg.sender === 'user' ? 'chat-message chat-user' : 'chat-message chat-ai'}>
+                {msg.text}{msg.isTyping && <span style={{ animation: 'blink 1s step-end infinite' }}>|</span>}
+              </div>
+            );
+          })}
           {isTyping && <div className="chat-message chat-ai" style={{ width: 50, textAlign: 'center' }}><Spin size="small" /></div>}
           <div ref={messagesEndRef} />
         </div>
@@ -215,10 +218,10 @@ const MainLayout = () => {
             style={{ borderRadius: 20, background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none' }}
             placeholder="Ask a doubt..." value={chatInput}
             onChange={(e) => setChatInput(e.target.value)} onPressEnter={handleSendMessage}
-            disabled={isTyping || messages[messages.length - 1]?.isTyping}
+            disabled={isTyping}
           />
           <Button className="gradient-btn" shape="circle" icon={<Send size={16} />} onClick={handleSendMessage}
-            disabled={!chatInput.trim() || isTyping || messages[messages.length - 1]?.isTyping} />
+            disabled={!chatInput.trim() || isTyping} />
         </div>
       </Drawer>
     </Layout>

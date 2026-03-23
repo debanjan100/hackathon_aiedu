@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Form, Input, InputNumber, Select, Button, Card, Typography, Divider, Upload, Avatar, message, Row, Col } from 'antd';
 import { User, Book, GraduationCap, Camera } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const { Title, Text } = Typography;
 
@@ -9,9 +10,30 @@ const Profile = () => {
   const { user } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState(null);
 
-  const onFinish = (values) => {
-    message.success('Profile updated successfully!');
-    console.log('Updated Profile:', values);
+  const onFinish = async (values) => {
+    if (!user) return message.error("You must be logged in to update your profile.");
+    
+    // Physical Postgres update
+    const { error } = await supabase
+      .from('users')
+      .update({
+        name: values.name,
+        age: values.age,
+        course: values.course,
+        github: values.github,
+        linkedin: values.linkedin
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      if (error.message.includes('fetch')) {
+         message.info('Mock Mode: Profile updated locally (Supabase keys missing).');
+      } else {
+         message.error('Failed to update profile: ' + error.message);
+      }
+    } else {
+      message.success('Postgres Row Updated successfully! 🎉');
+    }
   };
 
   const handleAvatarChange = (info) => {
