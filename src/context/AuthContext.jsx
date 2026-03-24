@@ -30,7 +30,10 @@ export const AuthProvider = ({ children }) => {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { data: { name, skillLevel: 'Beginner', isPremium: false } }
+      options: { 
+        data: { name, skillLevel: 'Beginner', isPremium: false },
+        emailRedirectTo: `${window.location.origin}/dashboard`
+      }
     });
     if (error) throw error;
     message.success('Account created successfully! Welcome to AI Edu.');

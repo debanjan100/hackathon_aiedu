@@ -14,9 +14,14 @@ const Signup = () => {
   const onFinish = async (values) => {
     setLoading(true);
     try {
-      await signup(values.email, values.password, values.name);
-      antMessage.success('Account created! Welcome to AI Edu 🎓', 2);
-      setTimeout(() => navigate('/dashboard'), 500);
+      const data = await signup(values.email, values.password, values.name);
+      if (data?.user && !data?.session) {
+        antMessage.warning('Account created, but Email Confirmation is enabled in your Supabase project! Please check your email or disable it in Supabase Settings.', 6);
+        // Do not navigate to dashboard because they are not actually logged in yet
+      } else {
+        antMessage.success('Account created! Welcome to AI Edu 🎓', 2);
+        setTimeout(() => navigate('/dashboard'), 500);
+      }
     } catch (err) {
       antMessage.error(err.message || 'Failed to create account. Please try again.');
     } finally {
