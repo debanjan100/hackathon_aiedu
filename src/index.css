@@ -1,150 +1,170 @@
 :root {
-  --primary-color: #06B6D4; /* Cyan */
-  --accent-color: #7C3AED;  /* Deep Purple */
-  --bg-color: #050505;      /* Pure dark */
+  --primary-color: #06B6D4; 
+  --accent-color: #7C3AED;  
+  
+  --bg-primary: #f8fafc;
+  --card-bg: rgba(255, 255, 255, 0.8);
+  --text-color: #0f172a;
+  --text-muted: #64748b;
+  --border-color: rgba(0, 0, 0, 0.05);
+  
+  --sidebar-bg: #ffffff;
+  --header-bg: rgba(255, 255, 255, 0.8);
+  --modal-bg: rgba(255, 255, 255, 0.95);
+  --chat-ai-bg: rgba(0, 0, 0, 0.03);
+}
+
+[data-theme='dark'] {
+  --bg-primary: #050505; 
   --card-bg: rgba(255, 255, 255, 0.02);
   --text-color: #F8FAFC;
   --text-muted: #94A3B8;
+  --border-color: rgba(255, 255, 255, 0.05);
+  
+  --sidebar-bg: #0A0A0A;
+  --header-bg: rgba(5, 5, 5, 0.8);
+  --modal-bg: rgba(15, 23, 42, 0.85);
+  --chat-ai-bg: rgba(255, 255, 255, 0.05);
 }
 
-html {
-  scroll-behavior: smooth;
-}
+html { scroll-behavior: smooth; }
 
 html, body {
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
+  margin: 0; padding: 0; min-height: 100vh;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   color: var(--text-color);
-  background-color: var(--bg-color);
-  /* Static mesh gradient built natively - zero lag */
-  background-image: 
-    radial-gradient(circle at 15% 50%, rgba(124, 58, 237, 0.08), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(6, 182, 212, 0.08), transparent 25%);
-  background-attachment: fixed;
+  background-color: var(--bg-primary);
+  /* The animated radial lights are rendered directly via landing components, not the root body */
 }
 
-#root {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
+#root { height: 100vh; display: flex; flex-direction: column; }
 
-/* Glassmorphism - highly optimized */
+/* Vercel-Style Minimalist Cards */
 .glass-card {
   background: var(--card-bg) !important;
-  border-radius: 16px !important;
-  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--border-color) !important;
   transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.25s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease !important;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02), 0 2px 4px -1px rgba(0, 0, 0, 0.02) !important;
 }
 
-/* We only blur when hovering to save massive GPU repainting on scrolling */
-.glass-card:hover {
-  transform: translateY(-4px) scale(1.01);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2) !important;
-  border-color: rgba(6, 182, 212, 0.3) !important;
-  background: rgba(255, 255, 255, 0.04) !important;
+.glass-card:hover {  
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.02) !important;
 }
 
-/* Specific heavy blur strictly restricted to the Drawer and Sidebar */
+/* Specific heavy blur strictly restricted to Modal Overlays */
 .glass-drawer .ant-drawer-content {
-  background: rgba(10, 10, 10, 0.75) !important;
+  background: var(--modal-bg) !important;
   backdrop-filter: blur(24px) !important;
   -webkit-backdrop-filter: blur(24px) !important;
 }
 .glass-drawer .ant-drawer-header {
   background: transparent !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  border-bottom: 1px solid var(--border-color) !important;
 }
 
 /* Modern typography gradients */
 .text-gradient {
-  background: linear-gradient(135deg, #06B6D4, #7C3AED);
+  background: linear-gradient(135deg, var(--primary-color), var(--accent-color));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 /* Chat Bubbles */
-.chat-message {
-  padding: 12px 18px;
-  margin: 6px 0;
-  border-radius: 20px;
-  max-width: 85%;
-  word-wrap: break-word;
-  line-height: 1.5;
-  font-size: 14px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.chat-message { 
+  padding: 12px 18px; 
+  margin: 6px 0; 
+  border-radius: 16px; 
+  max-width: 85%; 
+  word-wrap: break-word; 
+  line-height: 1.5; 
+  font-size: 14px; 
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02); 
 }
-
-.chat-user {
-  background: linear-gradient(135deg, #7C3AED 0%, #06B6D4 100%);
-  color: white;
-  margin-left: auto;
-  border-bottom-right-radius: 4px;
+.chat-user { 
+  background: linear-gradient(135deg, var(--accent-color) 0%, var(--primary-color) 100%); 
+  color: white; 
+  margin-left: auto; 
+  border-bottom-right-radius: 4px; 
 }
-
-.chat-ai {
-  background: rgba(255, 255, 255, 0.05);
-  color: #F8FAFC;
-  margin-right: auto;
-  border-bottom-left-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.05);
+.chat-ai { 
+  background: var(--chat-ai-bg); 
+  color: var(--text-color); 
+  margin-right: auto; 
+  border-bottom-left-radius: 4px; 
+  border: 1px solid var(--border-color); 
 }
 
 /* Stunning Gradient Buttons */
 .gradient-btn {
-  background: linear-gradient(135deg, #06B6D4 0%, #7C3AED 100%) !important;
-  border: none !important;
-  color: white !important;
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%) !important;
+  border: none !important; 
+  color: white !important; 
   font-weight: 600 !important;
-  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.4) !important;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: 0 4px 14px rgba(6, 182, 212, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important; 
   border-radius: 8px !important;
 }
-.gradient-btn:hover {
-  opacity: 0.95 !important;
-  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.5) !important;
-  transform: translateY(-2px);
+.gradient-btn:hover { 
+  opacity: 0.95 !important; 
+  box-shadow: 0 6px 20px rgba(124, 58, 237, 0.4) !important; 
+  transform: translateY(-2px) scale(1.02); 
 }
 
 /* Chatbot Pulse Animation highly optimized */
-.chatbot-pulse {
-  animation: pulse-glow 2.5s infinite;
-}
-
-@keyframes pulse-glow {
-  0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.4); }
-  70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); }
+.chatbot-pulse { animation: pulse-glow 2.5s infinite; }
+@keyframes pulse-glow { 
+  0% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0.3); } 
+  70% { box-shadow: 0 0 0 15px rgba(6, 182, 212, 0); } 
+  100% { box-shadow: 0 0 0 0 rgba(6, 182, 212, 0); } 
 }
 
 /* Sidebar & Layout overrides */
-.ant-layout-sider {
-  background: #0A0A0A !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+.ant-layout-sider { 
+  background: var(--sidebar-bg) !important; 
+  border-right: 1px solid var(--border-color) !important; 
+  transition: background 0.3s ease; 
 }
-.ant-menu {
-  background: transparent !important;
+.ant-menu { background: transparent !important; }
+.ant-menu-item-selected { 
+  background: rgba(6, 182, 212, 0.1) !important; 
+  color: var(--primary-color) !important; 
 }
-.ant-menu-item-selected {
-  background: rgba(6, 182, 212, 0.1) !important;
-  color: #06B6D4 !important;
+.ant-layout-header { 
+  background: var(--header-bg) !important; 
+  backdrop-filter: blur(12px) !important; 
+  -webkit-backdrop-filter: blur(12px) !important; 
+  border-bottom: 1px solid var(--border-color) !important; 
+  transition: background 0.3s ease; 
 }
-.ant-layout-header {
-  background: rgba(5, 5, 5, 0.8) !important;
-  backdrop-filter: blur(12px) !important;
-  -webkit-backdrop-filter: blur(12px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+.ant-layout-content, .ant-layout { background: transparent !important; }
+
+/* Glass Modal Override */
+.glass-modal .ant-modal-content {
+  background: var(--modal-bg) !important; 
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid var(--border-color); 
+  border-radius: 16px; 
+  overflow: hidden; 
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.2);
 }
-.ant-layout-content, .ant-layout {
-  background: transparent !important;
+.glass-modal .ant-modal-header { 
+  background: transparent !important; 
+  padding: 20px 24px; 
+  border-bottom: 1px solid var(--border-color); 
 }
+.glass-modal .ant-modal-title { color: var(--text-color) !important; }
+.glass-modal .ant-modal-close { color: var(--text-muted) !important; top: 18px; }
+.glass-modal .ant-modal-close:hover { color: var(--text-color) !important; }
 
 /* Smooth route transitions layer */
-.page-transition-wrapper {
-  width: 100%;
-  height: 100%;
+.page-transition-wrapper { 
+  width: 100%; 
+  height: 100%; 
 }
+
+/* Fix ant select dropdowns */
+.dark-select-popup .ant-select-item-option-content { color: var(--text-color) !important; }
+.dark-select-popup { background: var(--sidebar-bg) !important; border: 1px solid var(--border-color) !important; }

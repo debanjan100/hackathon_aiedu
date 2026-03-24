@@ -57,11 +57,11 @@ const Assessment = () => {
         <Card className="glass-card" bordered={false} style={{ textAlign: 'center' }}>
           <Result
             icon={<CheckCircle color="#00f2fe" size={64} />}
-            title={<span style={{ color: '#fff' }}>Assessment Complete!</span>}
+            title={<span style={{ color: 'var(--text-color)' }}>Assessment Complete!</span>}
             subTitle={<span style={{ color: '#94a3b8' }}>You scored {score} out of {questions.length}.</span>}
             extra={[
               <div key="level" style={{ marginBottom: 24 }}>
-                <Title level={4} style={{ color: '#fff' }}>
+                <Title level={4} style={{ color: 'var(--text-color)' }}>
                   Assigned Skill Level: <span style={{ color: '#00f2fe' }}>{currentLevel}</span>
                 </Title>
                 <Paragraph style={{ color: '#e2e8f0' }}>Your learning path has been physically synced to the Postgres database.</Paragraph>
@@ -78,14 +78,14 @@ const Assessment = () => {
 
   return (
     <div style={{ maxWidth: 800, margin: '0 auto' }}>
-      <Title level={3} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, color: '#fff' }}>
+      <Title level={3} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, color: 'var(--text-color)' }}>
         <BrainCircuit color="#00f2fe" /> Initial Skill Assessment
       </Title>
       
       <Steps current={current} items={questions.map(() => ({ title: '' }))} style={{ marginBottom: 32 }} />
 
       <Card className="glass-card" bordered={false}>
-        <Title level={4} style={{ color: '#fff', marginBottom: 24 }}>
+        <Title level={4} style={{ color: 'var(--text-color)', marginBottom: 24 }}>
           {current + 1}. <span style={{ color: '#00f2fe', fontSize: 16 }}>[{questions[current].subject}]</span> {questions[current].text}
         </Title>
         <Radio.Group onChange={(e) => setSelectedOption(e.target.value)} value={selectedOption} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>

@@ -25,6 +25,11 @@ const Profile = () => {
       })
       .eq('id', user.id);
 
+    // Sync Auth JWT locally and globally
+    await supabase.auth.updateUser({
+      data: { course: values.course, name: values.name }
+    });
+
     if (error) {
       if (error.message.includes('fetch')) {
          message.info('Mock Mode: Profile updated locally (Supabase keys missing).');
@@ -46,7 +51,7 @@ const Profile = () => {
 
   return (
     <div style={{ maxWidth: 680, margin: '0 auto' }}>
-      <Title level={3} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, color: '#fff' }}>
+      <Title level={3} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 24px 0', color: 'var(--text-color)' }}>
         <User color="#00f2fe" /> User Profile
       </Title>
 
@@ -58,7 +63,7 @@ const Profile = () => {
           backgroundImage: 'url(/images/profile-banner.png)',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
-          border: '1px solid rgba(255,255,255,0.08)'
+          border: '1px solid var(--border-color)'
         }} />
         {/* Avatar Overlaid on Banner */}
         <div style={{ position: 'absolute', bottom: -48, left: 32 }}>
@@ -81,7 +86,7 @@ const Profile = () => {
                   boxShadow: '0 0 20px rgba(0,242,254,0.4)'
                 }}
               >
-                {!avatarUrl && (user?.name?.[0]?.toUpperCase() || 'U')}
+                {!avatarUrl && (user?.user_metadata?.name?.[0]?.toUpperCase() || 'U')}
               </Avatar>
               <div style={{
                 position: 'absolute', bottom: 0, right: 0,
@@ -107,45 +112,50 @@ const Profile = () => {
           name="profile"
           layout="vertical"
           onFinish={onFinish}
-          initialValues={{ name: user?.name || 'Demo User', age: 17, course: 'Computer Science', skillLevel: user?.skillLevel || 'Intermediate' }}
+          initialValues={{ name: user?.user_metadata?.name || 'Demo User', age: 17, course: user?.user_metadata?.course || 'Computer Science', skillLevel: user?.user_metadata?.skillLevel || 'Intermediate' }}
         >
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label={<span style={{ color: '#e2e8f0' }}>Full Name</span>} name="name" rules={[{ required: true }]}>
                 <Input prefix={<User size={16} color="#64748b" />} size="large"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }} />
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-color)', borderRadius: 10 }} />
               </Form.Item>
             </Col>
             <Col span={12}>
               <Form.Item label={<span style={{ color: '#e2e8f0' }}>Age</span>} name="age" rules={[{ required: true }]}>
-                <InputNumber size="large" style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }} />
+                <InputNumber size="large" style={{ width: '100%', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-color)', borderRadius: 10 }} />
               </Form.Item>
             </Col>
           </Row>
 
-          <Form.Item label={<span style={{ color: '#e2e8f0' }}>Course / Major</span>} name="course" rules={[{ required: true }]}>
-            <Input prefix={<Book size={16} color="#64748b" />} size="large"
-              style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }} />
+          <Form.Item label={<span style={{ color: '#e2e8f0' }}>Academic Major</span>} name="course" rules={[{ required: true }]}>
+            <Select size="large" popupClassName="dark-select-popup">
+              <Select.Option value="Computer Science">Computer Science & Engineering</Select.Option>
+              <Select.Option value="Pre-Med">Pre-Med & Biology</Select.Option>
+              <Select.Option value="Business Administration">Business Administration</Select.Option>
+              <Select.Option value="Law">Pre-Law & Ethics</Select.Option>
+              <Select.Option value="Humanities">Humanities & Literature</Select.Option>
+            </Select>
           </Form.Item>
 
           <Row gutter={16}>
             <Col span={12}>
               <Form.Item label={<span style={{ color: '#e2e8f0' }}>GitHub Profile</span>} name="github">
                 <Input size="large" placeholder="https://github.com/username"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }} />
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-color)', borderRadius: 10 }} />
               </Form.Item>
-              <Button href="https://github.com" target="_blank" block type="default" style={{ background: 'rgba(255,255,255,0.05)', color: '#fff', borderColor: 'rgba(255,255,255,0.2)' }}>Connect GitHub</Button>
+              <Button href="https://github.com" target="_blank" block type="default" style={{ background: 'var(--card-bg)', color: 'var(--text-color)', borderColor: 'var(--border-color)' }}>Connect GitHub</Button>
             </Col>
             <Col span={12}>
               <Form.Item label={<span style={{ color: '#e2e8f0' }}>LinkedIn Profile</span>} name="linkedin">
                 <Input size="large" placeholder="https://linkedin.com/in/username"
-                  style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }} />
+                  style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', color: 'var(--text-color)', borderRadius: 10 }} />
               </Form.Item>
               <Button href="https://linkedin.com" target="_blank" block type="primary" style={{ background: '#0a66c2', borderColor: '#0a66c2' }}>Connect LinkedIn</Button>
             </Col>
           </Row>
 
-          <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+          <Divider style={{ borderColor: 'var(--border-color)' }} />
 
           <Form.Item label={<span style={{ color: '#e2e8f0' }}>Current Skill Level (Auto-detected)</span>} name="skillLevel">
             <Select size="large" disabled>

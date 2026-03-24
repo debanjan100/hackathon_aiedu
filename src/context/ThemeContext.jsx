@@ -9,21 +9,8 @@ export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
-    // Set root CSS variables based on theme
-    const root = document.documentElement;
-    if (isDark) {
-      root.style.setProperty('--bg-color', '#0f172a');
-      root.style.setProperty('--text-color', '#f8fafc');
-      root.style.setProperty('--heading-color', '#ffffff');
-      root.style.setProperty('--text-secondary', '#94a3b8');
-      root.style.setProperty('--card-bg', 'rgba(30, 41, 59, 0.7)');
-    } else {
-      root.style.setProperty('--bg-color', '#f8fafc');
-      root.style.setProperty('--text-color', '#0f172a');
-      root.style.setProperty('--heading-color', '#0f172a');
-      root.style.setProperty('--text-secondary', '#475569');
-      root.style.setProperty('--card-bg', 'rgba(255, 255, 255, 0.9)');
-    }
+    // Inject the physical theme attribute to synchronize with index.css variables
+    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
   const toggleTheme = () => setIsDark(!isDark);

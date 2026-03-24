@@ -34,7 +34,7 @@ const Login = () => {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,242,254,0.1) 0%, rgba(79,172,254,0.05) 100%)' }} />
         <div style={{ textAlign: 'center', zIndex: 1, padding: 48 }}>
           <img src="/images/ai-learning.png" alt="AI Learning" style={{ maxWidth: 460, width: '100%', filter: 'drop-shadow(0 0 40px rgba(0,242,254,0.4))' }} />
-          <Title level={2} style={{ color: '#fff', marginTop: 32 }}>Learn Smarter with AI</Title>
+          <Title level={2} style={{ color: 'var(--text-color)', marginTop: 32 }}>Learn Smarter with AI</Title>
           <Text style={{ color: '#94a3b8', fontSize: 16 }}>Adaptive lessons. Personalized to you.</Text>
         </div>
       </Col>
@@ -48,7 +48,7 @@ const Login = () => {
         >
           <div style={{ textAlign: 'center', marginBottom: 32 }}>
             <Sparkles size={40} color="#00f2fe" style={{ marginBottom: 12 }} />
-            <Title level={3} style={{ color: '#fff', margin: 0 }}>Welcome Back</Title>
+            <Title level={3} style={{ color: 'var(--text-color)', margin: 0 }}>Welcome Back</Title>
             <Text style={{ color: '#94a3b8' }}>Sign in to your AI Edu account</Text>
           </div>
 
@@ -80,7 +80,7 @@ const Login = () => {
             Demo: <strong style={{ color: '#00f2fe' }}>demo@aiedu.com</strong> / <strong style={{ color: '#00f2fe' }}>password123</strong>
           </Text>
 
-          <Divider style={{ borderColor: 'rgba(255,255,255,0.08)', color: '#64748b' }}>
+          <Divider style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
             <Text style={{ color: '#64748b' }}>New here?</Text>
           </Divider>
           <Link to="/signup">

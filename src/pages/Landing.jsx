@@ -1,160 +1,146 @@
 import React from 'react';
-import { Row, Col, Typography, Button, Space } from 'antd';
-import { Rocket, Sparkles, BookOpen, Code, Cloud, Network, ShieldCheck, Mail, Github, Twitter, ChevronRight } from 'lucide-react';
+import { Row, Col, Typography, Button, Space, Card } from 'antd';
+import { Sparkles, BrainCircuit, Microscope, Scale, TrendingUp, Cpu, ChevronRight, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
 const { Title, Text } = Typography;
 
-const categories = [
-  { title: 'Full Stack', desc: 'React, Node, MongoDB', icon: <Code size={28} color="#06B6D4" /> },
-  { title: 'Algorithms', desc: 'Trees, Graphs, DP', icon: <Network size={28} color="#7C3AED" /> },
-  { title: 'AI/ML', desc: 'Python, TensorFlow', icon: <Sparkles size={28} color="#10b981" /> },
-  { title: 'Cloud', desc: 'AWS, Docker, K8s', icon: <Cloud size={28} color="#f59e0b" /> },
-  { title: 'Soft Skills', desc: 'Leadership, EQ', icon: <ShieldCheck size={28} color="#ef4444" /> }
+const disciplines = [
+  { title: 'Computer Science', icon: <Cpu size={24} color="var(--primary-color)" />, path: 'monaco-engine' },
+  { title: 'Pre-Medicine', icon: <Microscope size={24} color="#10b981" />, path: 'case-study' },
+  { title: 'Law & Ethics', icon: <Scale size={24} color="#f59e0b" />, path: 'case-study' },
+  { title: 'Business Strategy', icon: <TrendingUp size={24} color="#6366f1" />, path: 'case-study' },
 ];
 
-const paths = ['Data Scientist', 'Full Stack Developer', 'Cloud Engineer', 'Game Developer', 'Product Manager'];
-
-const containerVariants = { 
-  hidden: { opacity: 0 }, 
-  visible: { opacity: 1, transition: { staggerChildren: 0.15 } } 
-};
-const itemVariants = { 
-  hidden: { opacity: 0, y: 20 }, 
-  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } 
+const bentoVariants = {
+  hidden: { opacity: 0, y: 30 },
+  visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100, damping: 15 } }
 };
 
 const Landing = () => {
   const navigate = useNavigate();
 
   return (
-    <div style={{ minHeight: '100vh', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--bg-primary)', transition: 'background 0.3s ease' }}>
       
-      {/* Background ambient orbs */}
-      <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(6,182,212,0.15) 0%, transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
-      <div style={{ position: 'absolute', bottom: '-10%', right: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(124,58,237,0.15) 0%, transparent 60%)', filter: 'blur(80px)', zIndex: 0 }} />
-
-      {/* Navbar overlay */}
-      <motion.nav initial={{ y: -30, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.6, ease: "easeOut" }} style={{ position: 'relative', zIndex: 10, display: 'flex', justifyContent: 'space-between', padding: '24px 6vw', alignItems: 'center' }}>
+      {/* Premium Navbar */}
+      <motion.nav initial={{ y: -20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ duration: 0.5, ease: "easeOut" }} style={{ position: 'sticky', top: 0, zIndex: 50, display: 'flex', justifyContent: 'space-between', padding: '20px 6vw', alignItems: 'center', background: 'var(--header-bg)', backdropFilter: 'blur(12px)', borderBottom: '1px solid var(--border-color)' }}>
         <Title level={4} style={{ margin: 0, display: 'flex', gap: 10, alignItems: 'center' }} className="text-gradient">
-          <Sparkles size={24} color="#06B6D4" /> AI Edu Core
+          <Sparkles size={24} color="var(--primary-color)" /> AI Edu
         </Title>
         <Space size="middle">
-          <Button type="text" onClick={() => navigate('/login')} style={{ color: 'var(--text-muted)', fontSize: 16, fontWeight: 500 }}>Login</Button>
-          <Button className="gradient-btn" size="large" onClick={() => navigate('/signup')} style={{ borderRadius: 24, padding: '0 24px' }}>Sign Up Free</Button>
+          <Button type="text" onClick={() => navigate('/login')} style={{ color: 'var(--text-color)', fontWeight: 500 }}>Log In</Button>
+          <Button type="primary" onClick={() => navigate('/signup')} style={{ borderRadius: 8, background: 'var(--text-color)', color: 'var(--bg-primary)', fontWeight: 600, border: 'none', padding: '0 20px', boxShadow: '0 4px 14px rgba(0,0,0,0.1)' }}>Start Free</Button>
         </Space>
       </motion.nav>
 
-      {/* Hero Section */}
-      <div style={{ position: 'relative', zIndex: 1, minHeight: '80vh', display: 'flex', alignItems: 'center', padding: '0 6vw' }}>
-        <Row align="middle" justify="space-between" style={{ width: '100%' }}>
-          <Col xs={24} lg={12} style={{ paddingRight: 40 }}>
-            <motion.div initial={{ x: -40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.8, ease: "easeOut", delay: 0.2 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', padding: '6px 16px', borderRadius: 20, marginBottom: 24 }}>
-                <span style={{ width: 8, height: 8, background: '#06B6D4', borderRadius: '50%', boxShadow: '0 0 10px #06B6D4' }} />
-                <Text style={{ color: '#06B6D4', fontWeight: 600, fontSize: 13 }}>Platform v2.0 Live</Text>
-              </div>
-              <Title style={{ fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', lineHeight: 1.1, color: '#F8FAFC', marginBottom: 24, fontWeight: 800 }}>
-                Accelerate Your Core <br />
-                <span className="text-gradient">Engineering Skills.</span>
-              </Title>
-              <Text style={{ fontSize: 18, color: 'var(--text-muted)', display: 'block', marginBottom: 40, maxWidth: 540, lineHeight: 1.6 }}>
-                Stop watching tutorials. Start solving real algorithmic challenges guided by a contextual, intelligent AI Tutor built for FAANG prep.
-              </Text>
-              <Space size="large" wrap>
-                <Button className="gradient-btn" size="large" icon={<Rocket size={18} />} onClick={() => navigate('/signup')} style={{ height: 54, fontSize: 17, borderRadius: 12, padding: '0 32px' }}>
-                  Start Learning Now
-                </Button>
-                <Button size="large" onClick={() => {
-                  document.getElementById('explore-section').scrollIntoView({ behavior: 'smooth' });
-                }} style={{ height: 54, fontSize: 17, borderRadius: 12, background: 'rgba(255,255,255,0.03)', color: '#F8FAFC', border: '1px solid rgba(255,255,255,0.1)' }}>
-                  Explore Curriculums
-                </Button>
-              </Space>
-            </motion.div>
-          </Col>
-          
-          <Col xs={24} lg={12} style={{ display: 'flex', justifyContent: 'center', marginTop: '4rem' }}>
-            <motion.div initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 1, ease: "easeOut", delay: 0.4 }} style={{ position: 'relative', width: '100%', maxWidth: 540 }}>
-              <div className="glass-card" style={{ padding: 24, position: 'relative', zIndex: 2, background: 'rgba(10,10,10,0.6) !important' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 16 }}>
-                  <Sparkles color="#7C3AED" />
-                  <Text style={{ color: '#fff', fontWeight: 600 }}>Mock Interview: Binary Search</Text>
-                </div>
-                <div className="chat-message chat-ai" style={{ maxWidth: '95%' }}>
-                  Calculate the mid-point iteratively. What happens to the space complexity if you do this recursively instead? 🧐
-                </div>
-                <div className="chat-message chat-user" style={{ maxWidth: '90%' }}>
-                  Iterative is O(1) space, recursive is O(log n) because of the call stack!
-                </div>
-                <div className="chat-message chat-ai" style={{ maxWidth: '95%' }}>
-                  Spot on! Now write the code.
-                </div>
-              </div>
-              {/* Floating decorative cards */}
-              <motion.div animate={{ y: [-10, 10, -10] }} transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }} className="glass-card" style={{ position: 'absolute', top: -30, right: -40, padding: '12px 20px', zIndex: 3, display: 'flex', alignItems: 'center', gap: 10 }}>
-                <span style={{ fontSize: 24 }}>🔥</span> <Text style={{ color: '#fff', fontWeight: 'bold' }}>+10 Focus XP</Text>
-              </motion.div>
-            </motion.div>
-          </Col>
-        </Row>
-      </div>
-
-      {/* Explore Section */}
-      <div id="explore-section" style={{ position: 'relative', zIndex: 1, padding: '100px 6vw', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
-        <motion.div variants={containerVariants} initial="hidden" whileInView="visible" viewport={{ once: true }}>
-          <div style={{ textAlign: 'center', marginBottom: 60 }}>
-            <Title level={2} style={{ color: '#F8FAFC', marginBottom: 16 }}>Master Specialized Domains</Title>
-            <Text style={{ color: 'var(--text-muted)', fontSize: 18 }}>Structured roadmaps guided entirely by personalized AI pacing.</Text>
+      <main style={{ padding: '80px 6vw', maxWidth: 1400, margin: '0 auto' }}>
+        
+        {/* Stark Hero Section */}
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, ease: "easeOut" }} style={{ textAlign: 'center', marginBottom: 80, maxWidth: 800, margin: '0 auto 80px auto' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'var(--card-bg)', border: '1px solid var(--border-color)', padding: '6px 16px', borderRadius: 20, marginBottom: 32 }}>
+            <Sparkles size={14} color="var(--primary-color)" />
+            <Text style={{ color: 'var(--text-color)', fontWeight: 600, fontSize: 13 }}>Introducing the Universal Engine</Text>
           </div>
+          <Title style={{ fontSize: 'clamp(3rem, 6vw, 5rem)', lineHeight: 1.05, color: 'var(--text-color)', marginBottom: 24, fontWeight: 800, letterSpacing: '-0.03em' }}>
+            The Operating System for <span className="text-gradient">Higher Education.</span>
+          </Title>
+          <Text style={{ fontSize: 20, color: 'var(--text-muted)', display: 'block', marginBottom: 40, lineHeight: 1.5 }}>
+            A modular AI-powered campus. Seamlessly switch between writing code, diagnosing patients in clinical case studies, and building financial models.
+          </Text>
+          <Space size="middle" wrap justify="center" style={{ display: 'flex' }}>
+            <Button size="large" onClick={() => navigate('/signup')} style={{ height: 56, fontSize: 17, borderRadius: 12, background: 'var(--text-color)', color: 'var(--bg-primary)', border: 'none', padding: '0 32px', fontWeight: 600, transition: 'transform 0.2s', boxShadow: '0 8px 20px rgba(0,0,0,0.15)' }} onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'} onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}>
+              Build Your Profile
+            </Button>
+            <Button size="large" onClick={() => document.getElementById('bento-grid').scrollIntoView({ behavior: 'smooth' })} style={{ height: 56, fontSize: 17, borderRadius: 12, background: 'transparent', color: 'var(--text-color)', border: '1px solid var(--border-color)', padding: '0 32px' }}>
+              Explore Architecture
+            </Button>
+          </Space>
+        </motion.div>
 
-          <Row gutter={[24, 24]} justify="center">
-            {categories.map((cat, i) => (
-              <Col xs={24} sm={12} md={8} lg={4} key={i}>
-                <motion.div variants={itemVariants} whileHover={{ y: -5 }}>
-                  <div className="glass-card" style={{ padding: '32px 20px', textAlign: 'center', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', cursor: 'pointer' }} onClick={() => navigate('/signup')}>
-                    <div style={{ marginBottom: 20, background: 'rgba(255,255,255,0.02)', padding: 16, borderRadius: '50%' }}>{cat.icon}</div>
-                    <Title level={5} style={{ color: '#F8FAFC', marginBottom: 8 }}>{cat.title}</Title>
-                    <Text style={{ color: 'var(--text-muted)', fontSize: 13 }}>{cat.desc}</Text>
+        {/* Bento Grid Architecture */}
+        <div id="bento-grid">
+          <motion.div initial="hidden" whileInView="visible" viewport={{ once: true, margin: "-100px" }} variants={{ visible: { transition: { staggerChildren: 0.1 } } }}>
+            <Row gutter={[24, 24]}>
+              
+              {/* Massive Main Feature */}
+              <Col xs={24} lg={16}>
+                <motion.div variants={bentoVariants} style={{ height: '100%' }}>
+                  <div className="glass-card" style={{ padding: 48, height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                    <div style={{ position: 'absolute', top: -50, right: -50, width: 300, height: 300, background: 'radial-gradient(circle, var(--primary-color) 0%, transparent 70%)', opacity: 0.1, filter: 'blur(40px)' }} />
+                    <BrainCircuit size={48} color="var(--primary-color)" style={{ marginBottom: 24 }} />
+                    <Title level={2} style={{ color: 'var(--text-color)', marginTop: 0, fontWeight: 700, letterSpacing: '-0.02em' }}>Llama-3 Powered Tutor</Title>
+                    <Text style={{ color: 'var(--text-muted)', fontSize: 18, maxWidth: 500, lineHeight: 1.6 }}>
+                      An ultra-low latency groq-accelerated intelligence that reads your active workspace. It debugs your code, evaluates your essays, and forces you to learn via the Socratic method instead of spoonfeeding answers.
+                    </Text>
                   </div>
                 </motion.div>
               </Col>
-            ))}
-          </Row>
 
-          <div style={{ marginTop: 100, textAlign: 'center' }}>
-            <Title level={3} style={{ color: '#F8FAFC', marginBottom: 40 }}>Direct Career Trajectories</Title>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, justifyContent: 'center' }}>
-              {paths.map((p, i) => (
-                <motion.div key={i} variants={itemVariants} whileHover={{ scale: 1.05, borderColor: '#7C3AED' }} onClick={() => navigate('/signup')} style={{ padding: '16px 32px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 12, color: 'var(--text-muted)', fontWeight: 600, cursor: 'pointer', transition: 'all 0.3s ease', display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {p} <ChevronRight size={16} />
+              {/* Top Right Feature */}
+              <Col xs={24} lg={8}>
+                <motion.div variants={bentoVariants} style={{ height: '100%' }}>
+                  <div className="glass-card" style={{ padding: 32, height: '100%', display: 'flex', flexDirection: 'column' }}>
+                    <Zap size={36} color="var(--accent-color)" style={{ marginBottom: 24 }} />
+                    <Title level={3} style={{ color: 'var(--text-color)', marginTop: 0, fontWeight: 700, letterSpacing: '-0.02em' }}>Instant Context Engine</Title>
+                    <Text style={{ color: 'var(--text-muted)', fontSize: 16, lineHeight: 1.6 }}>
+                      State hydration happens at the Edge. Swap your major from Computer Science to Pre-Med and watch the entire UI instantly reshape itself.
+                    </Text>
+                  </div>
                 </motion.div>
-              ))}
-            </div>
-          </div>
-        </motion.div>
-      </div>
+              </Col>
 
-      {/* Footer */}
-      <footer style={{ background: '#050505', padding: '60px 6vw 40px', borderTop: '1px solid rgba(255,255,255,0.05)', position: 'relative', zIndex: 1 }}>
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-          <Title level={4} className="text-gradient" style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 16 }}>
-            <Sparkles size={20} color="#06B6D4" /> AI Edu Core
-          </Title>
-          <Text style={{ color: 'var(--text-muted)', marginBottom: 32, maxWidth: 400 }}>
-            The definitive technical interview prep engine powered by adaptive LLM context memory.
-          </Text>
-          <Space size="large" style={{ marginBottom: 40 }}>
-            <Button type="text" style={{ color: 'var(--text-muted)' }} icon={<Mail size={18} />}>Contact</Button>
-            <Button type="text" style={{ color: 'var(--text-muted)' }} icon={<Github size={18} />}>GitHub</Button>
-            <Button type="text" style={{ color: 'var(--text-muted)' }} icon={<Twitter size={18} />}>Twitter</Button>
-          </Space>
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: 24, width: '100%', color: 'var(--text-muted)', fontSize: 13 }}>
-            © {new Date().getFullYear()} AI Edu Core. Built for Hackathon Excellence.
-          </div>
+              {/* Bottom Multi-Disciplinary Grid */}
+              <Col xs={24}>
+                <motion.div variants={bentoVariants}>
+                  <div className="glass-card" style={{ padding: 40 }}>
+                    <Row align="middle" justify="space-between" style={{ marginBottom: 32 }}>
+                      <Col xs={24} md={18}>
+                        <Title level={3} style={{ color: 'var(--text-color)', margin: 0, fontWeight: 700, letterSpacing: '-0.02em' }}>Universal Disciplines</Title>
+                        <Text style={{ color: 'var(--text-muted)', fontSize: 16 }}>Dynamically routed workspaces built for every field.</Text>
+                      </Col>
+                      <Col xs={24} md={6} style={{ textAlign: 'right' }}>
+                        <Button type="link" onClick={() => navigate('/signup')} style={{ color: 'var(--primary-color)', fontWeight: 600, fontSize: 16 }}>Explore All <ChevronRight size={18} /></Button>
+                      </Col>
+                    </Row>
+                    
+                    <Row gutter={[16, 16]}>
+                      {disciplines.map((d, i) => (
+                        <Col xs={24} sm={12} md={6} key={i}>
+                          <div style={{ padding: 24, border: '1px solid var(--border-color)', borderRadius: 16, background: 'var(--bg-secondary)', transition: 'transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s ease', cursor: 'pointer' }} 
+                               onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-6px)'; e.currentTarget.style.boxShadow = '0 10px 20px rgba(0,0,0,0.05)'; }} 
+                               onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                               onClick={() => navigate('/signup')}>
+                            <div style={{ marginBottom: 16 }}>{d.icon}</div>
+                            <Title level={5} style={{ color: 'var(--text-color)', margin: '0 0 8px 0', fontWeight: 600 }}>{d.title}</Title>
+                            <Text style={{ color: 'var(--text-muted)', fontSize: 13, fontFamily: 'monospace' }}>Workspace: {d.path}</Text>
+                          </div>
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
+                </motion.div>
+              </Col>
+
+            </Row>
+          </motion.div>
         </div>
+      </main>
+
+      {/* Stark Footer */}
+      <footer style={{ borderTop: '1px solid var(--border-color)', padding: '40px 6vw', marginTop: 100, background: 'var(--bg-secondary)' }}>
+        <Row justify="space-between" align="middle" style={{ maxWidth: 1400, margin: '0 auto' }}>
+          <Col>
+            <Title level={5} style={{ margin: 0, color: 'var(--text-color)' }}>AI Edu Core</Title>
+            <Text style={{ color: 'var(--text-muted)', fontSize: 13 }}>Universal Education Canvas</Text>
+          </Col>
+          <Col>
+            <Text style={{ color: 'var(--text-muted)', fontSize: 13 }}>© {new Date().getFullYear()} AI Edu Core. Built meticulously.</Text>
+          </Col>
+        </Row>
       </footer>
+      
     </div>
   );
 };
