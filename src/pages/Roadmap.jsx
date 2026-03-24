@@ -62,8 +62,8 @@ const Roadmap = () => {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
       {/* Smart Path Header */}
-      <div style={{ background: 'rgba(255,255,255,0.03)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: 24, padding: '40px 32px', marginBottom: 32, textAlign: 'center' }}>
-        <Title level={2} style={{ color: '#fff', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
+      <div style={{ background: 'var(--card-bg)', backdropFilter: 'blur(16px)', border: '1px solid var(--border-color)', borderRadius: 24, padding: '40px 32px', marginBottom: 32, textAlign: 'center' }}>
+        <Title level={2} style={{ color: 'var(--text-color)', margin: '0 0 16px 0', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
           <Compass color="#00f2fe" size={36} /> 
           Smart Path Engine
         </Title>
@@ -75,9 +75,9 @@ const Roadmap = () => {
       <Row gutter={[24, 24]}>
         {/* GenAI Tools Section */}
         <Col xs={24} lg={8}>
-          <Card className="glass-card" bordered={false} title={<><Sparkles color="#722ed1" size={18} style={{ marginRight: 8 }}/> <span style={{ color: '#fff' }}>GenAI Learning Tools</span></>} style={{ height: '100%' }}>
+          <Card className="glass-card" bordered={false} title={<><Sparkles color="#722ed1" size={18} style={{ marginRight: 8 }}/> <span style={{ color: 'var(--text-color)' }}>GenAI Learning Tools</span></>} style={{ height: '100%' }}>
             {genAiTools.map((tool, idx) => (
-              <motion.div key={idx} whileHover={{ x: 10 }} style={{ marginBottom: 16, padding: 16, background: 'rgba(255,255,255,0.05)', borderRadius: 12, borderLeft: '4px solid #722ed1' }}>
+              <motion.div key={idx} whileHover={{ x: 10 }} style={{ marginBottom: 16, padding: 16, background: 'var(--card-bg)', borderRadius: 12, borderLeft: '4px solid #722ed1' }}>
                 <Title level={5} style={{ color: '#e2e8f0', margin: '0 0 4px 0' }}>{tool.title}</Title>
                 <Text style={{ color: '#94a3b8', fontSize: 13 }}>{tool.desc}</Text>
               </motion.div>
@@ -87,7 +87,7 @@ const Roadmap = () => {
 
         {/* Personalized Learning System */}
         <Col xs={24} lg={16}>
-          <Card className="glass-card" bordered={false} title={<><GraduationCap color="#52c41a" size={18} style={{ marginRight: 8 }}/> <span style={{ color: '#fff' }}>Personalized Learning System</span></>}>
+          <Card className="glass-card" bordered={false} title={<><GraduationCap color="#52c41a" size={18} style={{ marginRight: 8 }}/> <span style={{ color: 'var(--text-color)' }}>Personalized Learning System</span></>}>
             <Row gutter={[16, 16]}>
               <Col xs={24} md={8}>
                 <div style={{ padding: 20, textAlign: 'center', background: 'rgba(82, 196, 26, 0.1)', borderRadius: 16, border: '1px solid rgba(82, 196, 26, 0.3)' }}>
@@ -108,14 +108,14 @@ const Roadmap = () => {
                 </div>
               </Col>
             </Row>
-            <Divider style={{ borderColor: 'rgba(255,255,255,0.1)' }} />
+            <Divider style={{ borderColor: 'var(--border-color)' }} />
             <Text style={{ color: '#94a3b8' }}>Based on your baseline Assessment, the AI has generated the following Career Roadmaps just for you.</Text>
           </Card>
         </Col>
       </Row>
 
       {/* AI Career Roadmaps */}
-      <Title level={3} style={{ color: '#fff', marginTop: 48, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
+      <Title level={3} style={{ color: 'var(--text-color)', marginTop: 48, marginBottom: 24, display: 'flex', alignItems: 'center', gap: 12 }}>
         <Briefcase color="#faad14" /> AI Career Roadmaps
       </Title>
 
@@ -132,13 +132,13 @@ const Roadmap = () => {
                   <div style={{ width: 48, height: 48, borderRadius: 12, background: `rgba(${path.color === '#00f2fe' ? '0,242,254' : path.color === '#1890ff' ? '24,144,255' : path.color === '#722ed1' ? '114,46,209' : '250,173,20'}, 0.2)`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                     {path.icon}
                   </div>
-                  <Title level={4} style={{ color: '#fff', margin: 0 }}>{path.title}</Title>
+                  <Title level={4} style={{ color: 'var(--text-color)', margin: 0 }}>{path.title}</Title>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {path.steps.map((step, sIdx) => (
                     <div key={sIdx} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 'bold' }}>
+                      <div style={{ width: 24, height: 24, borderRadius: '50%', background: 'var(--bg-secondary)', color: 'var(--text-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 'bold' }}>
                         {sIdx + 1}
                       </div>
                       <Text style={{ color: '#e2e8f0', fontSize: 14 }}>{step}</Text>

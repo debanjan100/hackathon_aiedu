@@ -26,11 +26,60 @@ const Dashboard = () => {
     }
   }, [user]);
 
-  const topicScores = [
-    { name: 'Trees & Graphs', score: 35, path: 'trees' },
-    { name: 'Arrays & Hashing', score: 85, path: 'arrays' },
-    { name: 'React Hooks', score: 60, path: 'react' }
-  ];
+  // Phase 18: Universal Education Overhaul
+  // Dynamically configure the dashboard payload based on the user's Academic Major
+  const major = user?.user_metadata?.course || 'Computer Science';
+  
+  let topicScores = [];
+  let dashboardHeroImage = "";
+  let dashboardTagline = "";
+  let dashboardThemeColor = "";
+
+  if (major.includes('Pre-Med')) {
+    topicScores = [
+      { name: 'Anatomy 101: Skeletal System', score: 35, path: 'anatomy-1' },
+      { name: 'Clinical Diagnostics', score: 85, path: 'diagnostics' },
+      { name: 'Pharmacology Fundamentals', score: 60, path: 'pharma' }
+    ];
+    dashboardHeroImage = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop";
+    dashboardTagline = "Ready to continue your medical diagnostic training?";
+    dashboardThemeColor = "#10b981"; // Emerald
+  } else if (major.includes('Business')) {
+    topicScores = [
+      { name: 'Macroeconomics: Market Trends', score: 20, path: 'macro' },
+      { name: 'Startup Case Studies', score: 92, path: 'startups' },
+      { name: 'Corporate Finance', score: 45, path: 'finance' }
+    ];
+    dashboardHeroImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop";
+    dashboardTagline = "Ready to evaluate today's corporate environments?";
+    dashboardThemeColor = "#f59e0b"; // Amber
+  } else if (major.includes('Law')) {
+    topicScores = [
+      { name: 'Constitutional Law', score: 55, path: 'con-law' },
+      { name: 'Ethics & Liability', score: 70, path: 'ethics' }
+    ];
+    dashboardHeroImage = "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop";
+    dashboardTagline = "Ready to defend your legal logic in court?";
+    dashboardThemeColor = "#8b5cf6"; // Violet
+  } else if (major.includes('Humanities')) {
+    topicScores = [
+      { name: 'Western Philosophy', score: 80, path: 'philosophy' },
+      { name: 'Modern Literature Analysis', score: 40, path: 'literature' }
+    ];
+    dashboardHeroImage = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop";
+    dashboardTagline = "Ready to deconstruct classical literature?";
+    dashboardThemeColor = "#ec4899"; // Pink
+  } else {
+    // Default: Computer Science
+    topicScores = [
+      { name: 'Trees & Graphs', score: 35, path: 'trees' },
+      { name: 'Arrays & Hashing', score: 85, path: 'arrays' },
+      { name: 'React Hooks', score: 60, path: 'react' }
+    ];
+    dashboardHeroImage = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop";
+    dashboardTagline = "Ready to continue your AI-powered coding journey?";
+    dashboardThemeColor = "#00f2fe"; // Cyan
+  }
 
   const getRecommendation = (score) => {
     if (score < 50) return { text: 'Focus here: Fundamentals needed.', color: '#ff4d4f' };
@@ -83,22 +132,25 @@ const Dashboard = () => {
   return (
     <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
       {/* Welcome Banner */}
-      <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 32, padding: '32px 40px', background: 'linear-gradient(135deg, rgba(0,242,254,0.1) 0%, rgba(79,172,254,0.05) 100%)', borderRadius: 24, border: '1px solid rgba(0,242,254,0.2)' }}>
+      <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 32, padding: '32px 40px', background: `linear-gradient(135deg, ${dashboardThemeColor}22 0%, ${dashboardThemeColor}05 100%)`, borderRadius: 24, border: `1px solid ${dashboardThemeColor}33` }}>
         <Col xs={24} md={16}>
           <Title level={2} style={{ color: 'var(--heading-color)', margin: 0 }}>
-            Welcome back, {user?.name?.split(' ')[0] || 'Demo User'}! 🚀
+            Welcome back, {user?.user_metadata?.name?.split(' ')[0] || 'Demo User'}! 🚀
           </Title>
           <Text style={{ color: 'var(--text-secondary)', fontSize: 16 }}>
-            Ready to continue your AI-powered learning journey?
+            {dashboardTagline}
           </Text>
-          <div style={{ marginTop: 24 }}>
-            <Button type="primary" size="large" className="gradient-btn" style={{ borderRadius: 8, padding: '0 32px' }} onClick={() => navigate('/dashboard/course/practice')}>
-              Resume Lesson
+          <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
+            <Tag color="purple" style={{ padding: '6px 16px', fontSize: 14, borderRadius: 12, border: 'none', background: 'var(--card-bg)' }}>
+               {major} Track
+            </Tag>
+            <Button type="primary" size="large" className="gradient-btn" style={{ background: dashboardThemeColor, borderColor: dashboardThemeColor, borderRadius: 8, padding: '0 32px' }} onClick={() => navigate('/dashboard/course/practice')}>
+              Access Training Arena
             </Button>
           </div>
         </Col>
         <Col xs={24} md={8} style={{ textAlign: 'center' }}>
-          <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop" alt="Data Science Graphs" style={{ maxWidth: '100%', height: 160, objectFit: 'cover', filter: 'drop-shadow(0 10px 20px rgba(0,242,254,0.4))', borderRadius: 16, border: '2px solid rgba(0,242,254,0.3)' }} />
+          <img src={dashboardHeroImage} alt={`${major} Theme`} style={{ maxWidth: '100%', height: 160, objectFit: 'cover', filter: `drop-shadow(0 10px 20px ${dashboardThemeColor}66)`, borderRadius: 16, border: `2px solid ${dashboardThemeColor}44` }} />
         </Col>
       </Row>
 
@@ -107,15 +159,15 @@ const Dashboard = () => {
         <Col xs={24} md={8}>
           <Card className="glass-card" title={<span style={{ color: 'var(--text-color)' }}>Overall Progress</span>} bordered={false}>
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <Progress type="circle" percent={70} strokeColor={{ '0%': '#00f2fe', '100%': '#4facfe' }}
-                trailColor="rgba(255,255,255,0.1)"
+              <Progress type="circle" percent={70} strokeColor={{ '0%': dashboardThemeColor, '100%': '#fff' }}
+                trailColor="var(--border-color)"
                 format={percent => <span style={{ color: 'var(--text-color)', fontSize: 22, fontWeight: 700 }}>{percent}%</span>} />
               
               <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 12 }}>
                 <div>
                   <Text style={{ color: 'var(--text-secondary)' }} strong>Level: </Text>
-                  <Tag style={{ background: 'rgba(0,242,254,0.15)', color: '#00f2fe', border: '1px solid rgba(0,242,254,0.3)', borderRadius: 12, fontWeight: 600 }}>
-                    {user?.skillLevel || 'Intermediate'}
+                  <Tag style={{ background: `${dashboardThemeColor}22`, color: dashboardThemeColor, border: `1px solid ${dashboardThemeColor}44`, borderRadius: 12, fontWeight: 600 }}>
+                    {user?.user_metadata?.skillLevel || 'Intermediate'}
                   </Tag>
                 </div>
                 <div>
@@ -147,13 +199,13 @@ const Dashboard = () => {
              <List
               itemLayout="horizontal"
               dataSource={[
-                { name: 'Alice JS', xp: '14,200', rank: 1, color: '#faad14' },
-                { name: 'Bob React', xp: '12,400', rank: 2, color: '#d4af37' },
-                { name: 'Charlie Code', xp: '10,100', rank: 3, color: '#cd7f32' },
-                { name: user?.name || 'You', xp: xp.toLocaleString(), rank: 42, color: '#00f2fe' }
+                { name: 'Alice', xp: '14,200', rank: 1, color: '#faad14' },
+                { name: 'Bob', xp: '12,400', rank: 2, color: '#d4af37' },
+                { name: 'Charlie', xp: '10,100', rank: 3, color: '#cd7f32' },
+                { name: user?.user_metadata?.name || 'You', xp: xp.toLocaleString(), rank: 42, color: dashboardThemeColor }
               ]}
               renderItem={item => (
-                <List.Item style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '12px 0' }}>
+                <List.Item style={{ borderBottom: '1px solid var(--border-color)', padding: '12px 0' }}>
                   <List.Item.Meta
                     avatar={
                       <div style={{ width: 32, height: 32, borderRadius: 16, background: `linear-gradient(135deg, ${item.color}, #000)`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
@@ -172,7 +224,7 @@ const Dashboard = () => {
         {/* AI Personalized Recommendations */}
         <Col xs={24} md={8}>
           <Card className="glass-card"
-            title={<><TrendingUp size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#00f2fe' }}/><span style={{ color: 'var(--text-color)' }}>Smart Path</span></>}
+            title={<><TrendingUp size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: dashboardThemeColor }}/><span style={{ color: 'var(--text-color)' }}>Smart Path</span></>}
             bordered={false}
           >
             <List
@@ -187,10 +239,10 @@ const Dashboard = () => {
                         Start
                       </Button>
                     ]}
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}
+                    style={{ borderBottom: '1px solid var(--border-color)' }}
                   >
                     <List.Item.Meta
-                      avatar={<Progress type="dashboard" percent={item.score} size={44} showInfo={false} strokeColor={rec.color} trailColor="rgba(255,255,255,0.1)" />}
+                      avatar={<Progress type="dashboard" percent={item.score} size={44} showInfo={false} strokeColor={rec.color} trailColor="var(--border-color)" />}
                       title={<span style={{ color: 'var(--text-color)' }}>{item.name}</span>}
                       description={<span style={{ color: rec.color, fontSize: 12 }}>→ {rec.text}</span>}
                     />

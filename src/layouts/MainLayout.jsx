@@ -18,6 +18,7 @@ import {
   Compass
 } from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -137,18 +138,18 @@ const MainLayout = () => {
 
   return (
     <Layout style={{ minHeight: '100vh', background: 'transparent' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} theme="dark">
+      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} trigger={null}>
         <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '64px' }}>
           {!collapsed ? (
-            <Title level={4} style={{ margin: 0, color: '#00f2fe', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Title level={4} style={{ margin: 0, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: 8 }}>
               <Sparkles size={20} /> AI Edu
             </Title>
-          ) : <Sparkles color="#00f2fe" />}
+          ) : <Sparkles color="var(--primary-color)" />}
         </div>
-        <Menu theme="dark" mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={({ key }) => navigate(key)} />
+        <Menu mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={({ key }) => navigate(key)} />
       </Sider>
       <Layout style={{ background: 'transparent' }}>
-        <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1, background: 'var(--card-bg)', backdropFilter: 'blur(16px)', borderBottom: '1px solid rgba(0,242,254,0.1)' }}>
+        <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <Button type="text" icon={<MenuIcon size={20} color="var(--text-color)" />} onClick={() => setCollapsed(!collapsed)} style={{ marginRight: 16 }} />
             <Title level={5} style={{ margin: 0, color: 'var(--text-color)' }}>AI Skill Development</Title>
@@ -156,12 +157,12 @@ const MainLayout = () => {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
             {/* LeetCode Style Study Timer (Pomodoro XP trigger) */}
-            <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0,0,0,0.1)', padding: '4px 12px', borderRadius: 20, border: '1px solid rgba(0,242,254,0.3)' }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 16, color: '#00f2fe', marginRight: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--card-bg)', padding: '4px 12px', borderRadius: 20, border: '1px solid var(--border-color)' }}>
+              <span style={{ fontFamily: 'monospace', fontSize: 16, color: 'var(--primary-color)', marginRight: 8 }}>
                 {String(Math.floor(timer / 60)).padStart(2, '0')}:{String(timer % 60).padStart(2, '0')}
               </span>
               <Button type="text" size="small" icon={isTimerActive ? <Pause size={14} color="#faad14"/> : <Play size={14} color="#52c41a"/>} onClick={() => setIsTimerActive(!isTimerActive)} />
-              <Button type="text" size="small" icon={<RefreshCw size={14} color="#94a3b8"/>} onClick={() => { setIsTimerActive(false); setTimer(0); }} />
+              <Button type="text" size="small" icon={<RefreshCw size={14} color="var(--text-muted)"/>} onClick={() => { setIsTimerActive(false); setTimer(0); }} />
             </div>
 
             {/* Theme Toggle */}
@@ -178,7 +179,18 @@ const MainLayout = () => {
           </div>
         </Header>
         <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, borderRadius: 8, overflow: 'auto' }}>
-          <Outlet context={{ openMockInterview }} />
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={location.pathname}
+              initial={{ opacity: 0, scale: 0.98, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.98, y: -10 }}
+              transition={{ duration: 0.25, ease: 'easeOut' }}
+              className="page-transition-wrapper"
+            >
+              <Outlet context={{ openMockInterview }} />
+            </motion.div>
+          </AnimatePresence>
         </Content>
       </Layout>
 
@@ -196,7 +208,7 @@ const MainLayout = () => {
 
       <Drawer
         rootClassName="glass-drawer"
-        title={<><Sparkles size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#00f2fe' }}/>AI Chat Tutor</>}
+        title={<><Sparkles size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: 'var(--primary-color)' }}/>AI Chat Tutor</>}
         placement="right" onClose={() => setChatOpen(false)} open={chatOpen} width={400}
         styles={{ body: { display: 'flex', flexDirection: 'column', padding: 0 } }}
       >
@@ -213,9 +225,9 @@ const MainLayout = () => {
           {isTyping && <div className="chat-message chat-ai" style={{ width: 50, textAlign: 'center' }}><Spin size="small" /></div>}
           <div ref={messagesEndRef} />
         </div>
-        <div style={{ padding: 16, borderTop: '1px solid rgba(255,255,255,0.05)', display: 'flex', gap: 8 }}>
+        <div style={{ padding: 16, borderTop: '1px solid var(--border-color)', display: 'flex', gap: 8 }}>
           <Input
-            style={{ borderRadius: 20, background: 'rgba(255,255,255,0.1)', color: '#fff', border: 'none' }}
+            style={{ borderRadius: 20, background: 'var(--bg-primary)', color: 'var(--text-color)', border: '1px solid var(--border-color)' }}
             placeholder="Ask a doubt..." value={chatInput}
             onChange={(e) => setChatInput(e.target.value)} onPressEnter={handleSendMessage}
             disabled={isTyping}

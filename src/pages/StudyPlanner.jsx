@@ -112,7 +112,7 @@ const StudyPlanner = () => {
                 const start = 0; const end = 12; const monthOptions = [];
                 for (let i = start; i < end; i++) monthOptions.push(<option key={i} value={i} className="month-item">{dayjs().month(i).format('MMM')}</option>);
                 return (
-                  <div style={{ padding: 12, display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: 12 }}>
+                  <div style={{ padding: 12, display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', marginBottom: 12 }}>
                     <Title level={4} style={{color: 'var(--text-color)', margin: 0}}>{value.format('MMMM YYYY')}</Title>
                     <Tag icon={<Bell size={12} />} color="processing" style={{ borderRadius: 12, cursor: 'pointer' }}>Reminders On</Tag>
                   </div>
@@ -146,7 +146,7 @@ const StudyPlanner = () => {
                   draggable
                   onDragStart={(e) => onDragStart(e, item.id)}
                   actions={[<Button type="text" danger icon={<Trash2 size={16} />} onClick={() => removeTask(item.id)} />]}
-                  style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(255,255,255,0.03)', margin: '8px 0', borderRadius: 8, padding: '12px 16px', cursor: 'grab' }}
+                  style={{ borderBottom: '1px solid var(--border-color)', background: 'var(--card-bg)', margin: '8px 0', borderRadius: 8, padding: '12px 16px', cursor: 'grab' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <GripVertical size={16} color="#94a3b8" />

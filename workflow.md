@@ -32,5 +32,18 @@ Originally dependent on Google's Gemini endpoint directly from a local Node.js p
 ### 5. Razorpay Edge Cryptography
 - The Premium Upsell functionality securely writes the `isPremium` boolean back to the user's Postgres identity by calling a secondary Deno Edge Function (`supabase/functions/payment`), which generates Stripe/Razorpay orders and validates crypto HMAC SHA256 signatures entirely on the cloud edge.
 
+### 6. The "AI Edu" Code Execution Sandbox
+- **Monaco Engine:** The static Course practice grid was upgraded with a physical, in-browser Code Sandbox utilizing `@monaco-editor/react`. It features native syntax highlighting, font emulation, and state management.
+- **Groq Llama-3 Kernel Bypass:** Rather than relying on rigid, unreliable free-tier execution endpoints (like Piston or Judge0), the "Run Code" execution pipeline routes directly to the Supabase AI Edge. Llama-3 fundamentally behaves as a headless compiler, simulating the user's logic in Python/JS and returning syntactically perfect terminal output or tracebacks.
+
+### 7. Deep AI Mentor Vectorization
+- **Self-Healing IDE:** Integrated a persistent `Bug / Debug` module directly into the Monaco editor header. When triggered, the user's logic flaw and error traces are piped into the Groq Edge infrastructure for deep analysis.
+- **Educational Constraint Pipelines:** The LLM's system prompt was specifically hardened to behave like a rigorous professor. To preserve the platform's core educational utility, the model is strictly forbidden from generating algorithmic answers. It may only use the "Apply Fix" UI pipeline to automatically hot-swap typos or missing syntactic braces, forcing the user to learn and solve the DSA challenges themselves.
+
+### 8. The Universal Education Pivot
+- **Dynamic JWT Hydration:** The platform's entire physical architecture was decoupled from hardcoded Engineering paths. The Profile `Save` hook was wired rigidly into the `supabase.auth.updateUser()` pipeline, forcing immediate virtual DOM synchronizations whenever a user changes their Major.
+- **Adaptive Dashboards:** The `Dashboard.jsx` environment autonomously mutates its hero imagery, taglines, hex-color palettes (Emerald for Medicine, Gold for Business, Cyan for Engineering), and "Smart Path" module logic based exclusively on the active session's Major constraint.
+- **Discipline-Specific Sandbox Routing:** The `Course.jsx` grid was completely transformed into a dynamic router. Clicking "Solve" interrogates your Major. Computer Science students are routed directly into the Monaco Web IDE compiler. Business, Law, and Medicine students are routed to the massive new `CaseStudyEditor.jsx`—a pristine Llama-3 powered sandbox rigidly structured to grade thesis logic, diagnostic analysis, and written corporate proposals out of 100 points.
+
 ## 🏁 Final State 
-Phase 15 successfully executed an aggressive teardown. The project has been effectively purged of all legacy Node/Express dependencies and the `server` monolith was terminated. The repository is 100% structurally prepared for Vercel/Netlify production deployment as a purely Client-Edge mapped architecture!
+Phase 18 achieved the holy grail of hackathon scalability. The repository is officially an elite, serverless, and completely Universal AI Education matrix capable of seamlessly pivoting between completely disparate academic domains without a single reload hook.

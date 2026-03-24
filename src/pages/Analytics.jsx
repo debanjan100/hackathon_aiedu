@@ -50,7 +50,7 @@ const Analytics = () => {
   return (
     <div className="analytics-container">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-        <Title level={3} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, color: '#fff' }}>
+        <Title level={3} style={{ display: 'flex', alignItems: 'center', gap: 8, margin: 0, color: 'var(--text-color)' }}>
           <BarChart2 color="#00f2fe" /> Performance Analytics
         </Title>
         <Select defaultValue="6weeks" style={{ width: 150 }}>
@@ -62,15 +62,15 @@ const Analytics = () => {
 
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={16}>
-          <Card className="glass-card" title={<><Activity size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#52c41a' }}/><span style={{ color: '#fff'}}>Accuracy Improvement</span></>} bordered={false}>
+          <Card className="glass-card" title={<><Activity size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#52c41a' }}/><span style={{ color: 'var(--text-color)'}}>Accuracy Improvement</span></>} bordered={false}>
             <div style={{ height: 350, width: '100%' }}>
               <ResponsiveContainer>
                 <LineChart data={dynAccuracy} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border-color)" />
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8' }} />
                   <YAxis axisLine={false} tickLine={false} domain={[0, 100]} tickFormatter={(val) => `${val}%`} tick={{ fill: '#94a3b8' }} />
                   <Tooltip 
-                    contentStyle={{ borderRadius: 8, border: 'none', background: 'rgba(15, 23, 42, 0.9)', color: '#fff', boxShadow: '0 4px 12px rgba(0,242,254,0.2)' }}
+                    contentStyle={{ borderRadius: 8, border: 'none', background: 'var(--modal-bg)', color: 'var(--text-color)', boxShadow: '0 4px 12px rgba(0,242,254,0.2)' }}
                   />
                   <Legend wrapperStyle={{ color: '#e2e8f0' }} />
                   <Line type="monotone" dataKey="accuracy" name="Your Accuracy" stroke="#00f2fe" strokeWidth={3} activeDot={{ r: 8, fill: '#00f2fe', stroke: '#fff' }} />
@@ -85,14 +85,14 @@ const Analytics = () => {
         </Col>
 
         <Col xs={24} lg={8}>
-          <Card className="glass-card" title={<span style={{ color: '#fff'}}>Time by Topic</span>} bordered={false} style={{ height: '100%' }}>
+          <Card className="glass-card" title={<span style={{ color: 'var(--text-color)'}}>Time by Topic</span>} bordered={false} style={{ height: '100%' }}>
             <div style={{ height: 300, width: '100%' }}>
               <ResponsiveContainer>
                 <BarChart data={timeData} layout="vertical" margin={{ top: 5, right: 30, left: 40, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="rgba(255,255,255,0.1)" />
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--border-color)" />
                   <XAxis type="number" hide />
                   <YAxis dataKey="topic" type="category" axisLine={false} tickLine={false} tick={{ fill: '#e2e8f0', fontSize: 12 }} />
-                  <Tooltip cursor={{ fill: 'rgba(255,255,255,0.05)' }} contentStyle={{ borderRadius: 8, border: 'none', background: 'rgba(15, 23, 42, 0.9)', color: '#fff' }} />
+                  <Tooltip cursor={{ fill: 'var(--glass-bg)' }} contentStyle={{ borderRadius: 8, border: 'none', background: 'var(--modal-bg)', color: 'var(--text-color)' }} />
                   <Bar dataKey="hours" fill="#4facfe" radius={[0, 4, 4, 0]} name="Hours Spent" barSize={20} />
                 </BarChart>
               </ResponsiveContainer>

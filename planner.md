@@ -23,6 +23,10 @@ The foundation is rock solid. The primary objective moving forward is expanding 
 - **Concept:** Instead of passing simply the user's immediate question to `Llama-3`, pass the user's actual architecture context.
 - **Execution:** Build a specific "Debug My Code" button inside the new Web IDE that sends the exact line number where their code is failing to the `chat` Edge Function, allowing Llama-3 to act exactly like an elite Staff Engineer debugging their logic flaw.
 
+### E. The Vercel-Tier Aesthetic Overhaul (Phase 19)
+- **Concept:** The current platform relies on a dark-only, hardcoded RGBA hackathon aesthetic. This must be modernized.
+- **Execution:** Refactor `index.css` to use a global CSS variable architecture (`--bg-primary`, `--text-primary`) supporting native Light/Dark theme toggling. Implement a minimalist Bento Box layout for the Landing Page and wrap all `react-router` DOM paths in `framer-motion` `<AnimatePresence>` for buttery smooth transitions.
+
 ## 3. Immediate Deployment Guide
 Since the architecture is fully modernized, pushing this to production takes less than 2 minutes:
 1. Push the entire repository up to GitHub.
