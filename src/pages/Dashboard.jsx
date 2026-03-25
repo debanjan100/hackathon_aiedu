@@ -1,278 +1,288 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Typography, Select, Progress, List, Tag, Badge, Button, message } from 'antd';
-import { TrendingUp, Award, Calendar, ChevronRight } from 'lucide-react';
+import { Row, Col, Card, Typography, Progress, List, Tag, Button, message, Divider } from 'antd';
+import { Award, Target, Clock, Zap, BookOpen, Quote, CheckCircle, Play, Pause, RotateCcw, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
+import { motion } from 'framer-motion';
+import dayjs from 'dayjs';
 
 const { Title, Text } = Typography;
+
+const QUOTES = [
+  { text: "The future belongs to those who learn more skills and combine them in creative ways.", author: "Robert Greene" },
+  { text: "Standardization breeds mediocrity. Orthogonality breeds genius.", author: "Naval Ravikant" },
+  { text: "Do not wait to strike till the iron is hot; but make it hot by striking.", author: "William Butler Yeats" },
+  { text: "The man who moves a mountain begins by carrying away small stones.", author: "Confucius" },
+  { text: "Action is the foundational key to all success.", author: "Pablo Picasso" },
+  { text: "Your problem is to bridge the gap which exists between where you are now and the goal you intend to reach.", author: "Earl Nightingale" },
+  { text: "What we fear of doing most is usually what we most need to do.", author: "Tim Ferriss" },
+];
+
+const getDailyQuote = () => {
+  const dayString = new Date().toDateString();
+  let hash = 0;
+  for (let i = 0; i < dayString.length; i++) hash = dayString.charCodeAt(i) + ((hash << 5) - hash);
+  return QUOTES[Math.abs(hash) % QUOTES.length];
+};
 
 const Dashboard = () => {
   const { user, login, token } = useAuth();
   const navigate = useNavigate();
   const [xp, setXp] = useState(0);
+  const [tasks, setTasks] = useState([]);
+  const [activeNode, setActiveNode] = useState(null);
+
+  // Pomodoro State
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
+  const [isActive, setIsActive] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
 
   useEffect(() => {
     if (user?.id) {
-       supabase.from('progress').select('xp_gained').eq('user_id', user.id)
-            .then(({ data }) => {
-               if (data && data.length > 0) {
-                 const totalXp = data.reduce((acc, curr) => acc + (curr.xp_gained || 0), 0);
-                 setXp(totalXp);
-               }
-            })
-            .catch(err => console.error(err));
+       // Fetch XP
+       supabase.from('progress').select('xp_gained').eq('user_id', user.id).then(({ data }) => {
+         if (data && data.length > 0) setXp(data.reduce((acc, curr) => acc + (curr.xp_gained || 0), 0));
+       });
+       
+       // Fetch Today's Tasks
+       const today = dayjs().format('YYYY-MM-DD');
+       supabase.from('tasks').select('*').eq('user_id', user.id).eq('date', today).then(({data}) => {
+         if (data) setTasks(data);
+       });
+
+       // Hydrate Active Trajectory Node
+       const nodes = user?.user_metadata?.roadmap_nodes;
+       if (nodes && nodes.length > 0) {
+          const nextTarget = nodes.find(n => n.status !== 'completed');
+          setActiveNode(nextTarget || nodes[nodes.length - 1]);
+       }
     }
   }, [user]);
 
-  // Phase 18: Universal Education Overhaul
-  // Dynamically configure the dashboard payload based on the user's Academic Major
-  const major = user?.user_metadata?.course || 'Computer Science';
-  
-  let topicScores = [];
-  let dashboardHeroImage = "";
-  let dashboardTagline = "";
-  let dashboardThemeColor = "";
+  // Pomodoro Timer Engine
+  useEffect(() => {
+    let interval = null;
+    if (isActive && timeLeft > 0) {
+      interval = setInterval(() => setTimeLeft(t => t - 1), 1000);
+    } else if (isActive && timeLeft === 0) {
+      clearInterval(interval);
+      setIsActive(false);
+      handlePomodoroComplete();
+    }
+    return () => clearInterval(interval);
+  }, [isActive, timeLeft]);
 
-  if (major.includes('Pre-Med')) {
-    topicScores = [
-      { name: 'Anatomy 101: Skeletal System', score: 35, path: 'anatomy-1' },
-      { name: 'Clinical Diagnostics', score: 85, path: 'diagnostics' },
-      { name: 'Pharmacology Fundamentals', score: 60, path: 'pharma' }
-    ];
-    dashboardHeroImage = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop";
-    dashboardTagline = "Ready to continue your medical diagnostic training?";
-    dashboardThemeColor = "#10b981"; // Emerald
-  } else if (major.includes('Business')) {
-    topicScores = [
-      { name: 'Macroeconomics: Market Trends', score: 20, path: 'macro' },
-      { name: 'Startup Case Studies', score: 92, path: 'startups' },
-      { name: 'Corporate Finance', score: 45, path: 'finance' }
-    ];
-    dashboardHeroImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop";
-    dashboardTagline = "Ready to evaluate today's corporate environments?";
-    dashboardThemeColor = "#f59e0b"; // Amber
-  } else if (major.includes('Law')) {
-    topicScores = [
-      { name: 'Constitutional Law', score: 55, path: 'con-law' },
-      { name: 'Ethics & Liability', score: 70, path: 'ethics' }
-    ];
-    dashboardHeroImage = "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop";
-    dashboardTagline = "Ready to defend your legal logic in court?";
-    dashboardThemeColor = "#8b5cf6"; // Violet
-  } else if (major.includes('Humanities')) {
-    topicScores = [
-      { name: 'Western Philosophy', score: 80, path: 'philosophy' },
-      { name: 'Modern Literature Analysis', score: 40, path: 'literature' }
-    ];
-    dashboardHeroImage = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop";
-    dashboardTagline = "Ready to deconstruct classical literature?";
-    dashboardThemeColor = "#ec4899"; // Pink
-  } else {
-    // Default: Computer Science
-    topicScores = [
-      { name: 'Trees & Graphs', score: 35, path: 'trees' },
-      { name: 'Arrays & Hashing', score: 85, path: 'arrays' },
-      { name: 'React Hooks', score: 60, path: 'react' }
-    ];
-    dashboardHeroImage = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop";
-    dashboardTagline = "Ready to continue your AI-powered coding journey?";
-    dashboardThemeColor = "#00f2fe"; // Cyan
-  }
+  const handlePomodoroComplete = async () => {
+    if (!isBreak) {
+      message.success('Deep Work Session Complete! +10 XP Gained.');
+      if (user) {
+        await supabase.from('progress').insert([{ user_id: user.id, xp_gained: 10 }]);
+        setXp(x => x + 10);
+      }
+      setTimeLeft(5 * 60); // 5 min break
+      setIsBreak(true);
+    } else {
+      message.success('Break time is over. Back to work!');
+      setTimeLeft(25 * 60);
+      setIsBreak(false);
+    }
+  };
 
-  const getRecommendation = (score) => {
-    if (score < 50) return { text: 'Focus here: Fundamentals needed.', color: '#ff4d4f' };
-    if (score < 80) return { text: 'Doing well! Practice harder problems.', color: '#faad14' };
-    return { text: 'Excellent! Ready for mock interviews.', color: '#52c41a' };
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const handlePremium = async () => {
     try {
-      // Direct integration with the Supabase Serverless payment module
-      const { data: orderData, error: orderErr } = await supabase.functions.invoke('payment', {
-        body: { action: 'create-order' }
-      });
+      const { data: orderData, error: orderErr } = await supabase.functions.invoke('payment', { body: { action: 'create-order' } });
       if (orderErr) throw orderErr;
-
       const options = {
-        key: 'rzp_test_mock', // using mock key for the checkout widget demo
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'AI Edu Premium',
-        description: 'Lifetime Mock Interviews',
-        order_id: orderData.id,
+        key: 'rzp_test_mock', amount: orderData.amount, currency: orderData.currency,
+        name: 'AI Edu Premium', description: 'Lifetime Mock Interviews', order_id: orderData.id,
         handler: async function (response) {
            const { data: verificationData, error: verifyErr } = await supabase.functions.invoke('payment', {
              body: { action: 'verify-payment', ...response, userId: user?.id }
            });
-           
            if (!verifyErr && verificationData?.success) {
-               // Update actual database user
                await supabase.from('users').update({ isPremium: true }).eq('id', user.id);
                message.success('Premium Unlocked! 🎉');
-               if (login && token) {
-                 login({ ...user, isPremium: true }, token);
-               }
-           } else {
-               message.error('Payment verification failed securely.');
-           }
+               if (login && token) login({ ...user, isPremium: true }, token);
+           } else message.error('Payment verification failed securely.');
         },
-        prefill: { name: user?.name, email: user?.email },
+        prefill: { name: user?.user_metadata?.name, email: user?.email },
         theme: { color: '#00f2fe' }
       };
-      
       const rzp1 = new window.Razorpay(options);
       rzp1.open();
-    } catch(err) {
-      message.error("Could not initiate payment system on edge.");
-    }
+    } catch { message.error("Could not initiate payment system on edge."); }
   };
 
+  const dailyQuote = getDailyQuote();
+  const major = user?.user_metadata?.course || 'Computer Science';
+  const themeColor = major.includes('Pre-Med') ? '#10b981' : major.includes('Business') ? '#f59e0b' : major.includes('Law') ? '#8b5cf6' : major.includes('Humanities') ? '#ec4899' : '#00f2fe';
+
+  const containerVariants = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } };
+  const itemVariants = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300, damping: 24 } } };
+
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
-      {/* Welcome Banner */}
-      <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 32, padding: '32px 40px', background: `linear-gradient(135deg, ${dashboardThemeColor}22 0%, ${dashboardThemeColor}05 100%)`, borderRadius: 24, border: `1px solid ${dashboardThemeColor}33` }}>
-        <Col xs={24} md={16}>
-          <Title level={2} style={{ color: 'var(--heading-color)', margin: 0 }}>
-            Welcome back, {user?.user_metadata?.name?.split(' ')[0] || 'Demo User'}! 🚀
+    <motion.div variants={containerVariants} initial="hidden" animate="visible" style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
+      {/* OS Welcome Header */}
+      <motion.div variants={itemVariants} style={{ marginBottom: 32, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: 24 }}>
+        <div>
+          <Title level={2} style={{ color: 'var(--text-color)', margin: 0, fontWeight: 800, letterSpacing: '-0.5px' }}>
+            Welcome back, <span style={{ color: themeColor }}>{user?.user_metadata?.name?.split(' ')[0] || 'Architect'}</span>.
           </Title>
-          <Text style={{ color: 'var(--text-secondary)', fontSize: 16 }}>
-            {dashboardTagline}
-          </Text>
-          <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
-            <Tag color="purple" style={{ padding: '6px 16px', fontSize: 14, borderRadius: 12, border: 'none', background: 'var(--card-bg)' }}>
-               {major} Track
-            </Tag>
-            <Button type="primary" size="large" className="gradient-btn" style={{ background: dashboardThemeColor, borderColor: dashboardThemeColor, borderRadius: 8, padding: '0 32px' }} onClick={() => navigate('/dashboard/course/practice')}>
-              Access Training Arena
-            </Button>
-          </div>
+          <Text style={{ color: '#94a3b8', fontSize: 16 }}>Ready to enter Flow State and accelerate your {major} trajectory?</Text>
+        </div>
+        <div style={{ textAlign: 'right' }}>
+           <Tag color="purple" style={{ padding: '6px 16px', borderRadius: 20, background: `${themeColor}22`, color: themeColor, border: 'none', fontWeight: 600 }}>
+             Level: {user?.user_metadata?.skillLevel || 'Intermediate'}
+           </Tag>
+           <Title level={4} style={{ color: '#fff', margin: '8px 0 0 0' }}>{xp.toLocaleString()} <span style={{ color: '#94a3b8', fontSize: 14 }}>XP</span></Title>
+        </div>
+      </motion.div>
+
+      <Row gutter={[24, 24]}>
+        {/* LEFT COLUMN: Deep Work Engine & Current Trajectory */}
+        <Col xs={24} md={15}>
+          {/* Active Node Hook */}
+          <motion.div variants={itemVariants} whileHover={{ y: -4 }}>
+            <Card style={{ background: 'linear-gradient(135deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.01) 100%)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, padding: '24px', backdropFilter: 'blur(24px)' }} bodyStyle={{ padding: 0 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                  <Text style={{ color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: 12, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <Target size={14} color={themeColor} /> Active Roadmap Objective
+                  </Text>
+                  <Title level={3} style={{ color: '#fff', margin: '8px 0' }}>
+                    {activeNode ? activeNode.title : 'Build Your Career Matrix'}
+                  </Title>
+                  <Text style={{ color: '#64748b' }}>
+                    {activeNode && user?.user_metadata?.roadmap_career ? `Pursuing ${user.user_metadata.roadmap_career.title}` : 'Initialize your roadmap to unlock dynamic modules.'}
+                  </Text>
+                </div>
+                <div>
+                  <Button 
+                    type="primary" 
+                    size="large"
+                    icon={activeNode ? <Play size={18} /> : <BookOpen size={18} />}
+                    onClick={() => {
+                       if (activeNode) {
+                         if (activeNode.type === 'Capstone Board') navigate('/dashboard/roadmap');
+                         else navigate('/dashboard/course/sandbox-' + encodeURIComponent(activeNode.title.toLowerCase().replace(/\s+/g, '-')));
+                       } else navigate('/dashboard/roadmap');
+                    }}
+                    style={{ height: 56, borderRadius: 16, background: activeNode ? `linear-gradient(135deg, ${themeColor}, #000)` : 'var(--bg-secondary)', border: `1px solid ${themeColor}44`, color: '#fff', fontWeight: 600, padding: '0 32px' }}
+                  >
+                    {activeNode ? 'Initialize Sandbox' : 'Open Matrix'}
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          </motion.div>
+
+          {/* Pomodoro Flow Engine */}
+          <motion.div variants={itemVariants} whileHover={{ y: -4 }} style={{ marginTop: 24 }}>
+            <Card style={{ background: '#0a0a0a', border: `1px solid ${isBreak ? '#10b981' : themeColor}44`, borderRadius: 32, overflow: 'hidden', position: 'relative' }} bodyStyle={{ padding: 48, zIndex: 2, position: 'relative', textAlign: 'center' }}>
+              <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 300, height: 300, background: isBreak ? '#10b981' : themeColor, filter: 'blur(150px)', opacity: isActive ? 0.3 : 0.1, transition: 'opacity 0.5s ease', zIndex: 0 }} />
+              
+              <Tag style={{ background: 'rgba(255,255,255,0.05)', border: 'none', color: '#94a3b8', padding: '6px 16px', borderRadius: 20, marginBottom: 24, fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>
+                <Clock size={12} style={{ marginRight: 6, verticalAlign: 'middle' }}/>
+                {isBreak ? 'Recovery Phase' : 'Deep Work Session'}
+              </Tag>
+              
+              <div style={{ fontSize: 96, fontWeight: 800, color: '#fff', fontFamily: 'JetBrains Mono, monospace', lineHeight: 1, marginBottom: 40, textShadow: '0 10px 30px rgba(0,0,0,0.5)', fontVariantNumeric: 'tabular-nums' }}>
+                {formatTime(timeLeft)}
+              </div>
+
+              <div style={{ display: 'flex', gap: 16, justifyContent: 'center' }}>
+                <Button 
+                  shape="circle" 
+                  size="large" 
+                  style={{ width: 64, height: 64, background: isActive ? 'rgba(255,255,255,0.1)' : themeColor, border: 'none', color: isActive ? '#fff' : '#000' }}
+                  onClick={() => setIsActive(!isActive)}
+                >
+                  {isActive ? <Pause size={28} /> : <Play size={28} style={{ marginLeft: 4 }}/>}
+                </Button>
+                <Button 
+                  shape="circle" 
+                  size="large" 
+                  style={{ width: 64, height: 64, background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#94a3b8' }}
+                  onClick={() => { setIsActive(false); setTimeLeft(isBreak ? 5 * 60 : 25 * 60); }}
+                >
+                  <RotateCcw size={24} />
+                </Button>
+              </div>
+            </Card>
+          </motion.div>
         </Col>
-        <Col xs={24} md={8} style={{ textAlign: 'center' }}>
-          <img src={dashboardHeroImage} alt={`${major} Theme`} style={{ maxWidth: '100%', height: 160, objectFit: 'cover', filter: `drop-shadow(0 10px 20px ${dashboardThemeColor}66)`, borderRadius: 16, border: `2px solid ${dashboardThemeColor}44` }} />
+
+        {/* RIGHT COLUMN: Tasks & Upsell */}
+        <Col xs={24} md={9}>
+          <motion.div variants={itemVariants} style={{ height: '100%' }}>
+            <Card title={<><CheckCircle size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: '#10b981' }}/><span style={{ color: 'var(--text-color)' }}>Today's Agenda</span></>} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 24, height: '100%', minHeight: 400 }} bodyStyle={{ padding: '0 24px 24px 24px' }} bordered={false}>
+              {tasks.length > 0 ? (
+                <List
+                  dataSource={tasks}
+                  renderItem={item => (
+                    <List.Item style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', padding: '16px 0' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                        <div style={{ width: 8, height: 8, borderRadius: 4, background: item.color === 'processing' ? themeColor : '#10b981' }} />
+                        <Text style={{ color: '#e2e8f0', fontSize: 15 }}>{item.text}</Text>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+              ) : (
+                <div style={{ padding: '40px 0', textAlign: 'center', color: '#64748b' }}>
+                  <CheckCircle size={48} opacity={0.2} style={{ display: 'block', margin: '0 auto 16px' }} />
+                  <Text style={{ color: '#64748b' }}>No deadlines scheduled for today.</Text><br/>
+                  <Button type="link" onClick={() => navigate('/dashboard/planner')} style={{ color: themeColor, marginTop: 8 }}>Open Study Planner →</Button>
+                </div>
+              )}
+            </Card>
+          </motion.div>
         </Col>
       </Row>
 
-      <Row gutter={[24, 24]}>
-        {/* Progress Overview & Streaks */}
-        <Col xs={24} md={8}>
-          <Card className="glass-card" title={<span style={{ color: 'var(--text-color)' }}>Overall Progress</span>} bordered={false}>
-            <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <Progress type="circle" percent={70} strokeColor={{ '0%': dashboardThemeColor, '100%': '#fff' }}
-                trailColor="var(--border-color)"
-                format={percent => <span style={{ color: 'var(--text-color)', fontSize: 22, fontWeight: 700 }}>{percent}%</span>} />
-              
-              <div style={{ marginTop: 24, display: 'flex', justifyContent: 'center', gap: 12 }}>
-                <div>
-                  <Text style={{ color: 'var(--text-secondary)' }} strong>Level: </Text>
-                  <Tag style={{ background: `${dashboardThemeColor}22`, color: dashboardThemeColor, border: `1px solid ${dashboardThemeColor}44`, borderRadius: 12, fontWeight: 600 }}>
-                    {user?.user_metadata?.skillLevel || 'Intermediate'}
-                  </Tag>
-                </div>
-                <div>
-                  <Text style={{ color: 'var(--text-secondary)' }} strong>Streak: </Text>
-                  <Tag color="orange" style={{ borderRadius: 12, fontWeight: 600 }}>🔥 5 Days</Tag>
-                </div>
-              </div>
+      {/* BOTTOM BAR: Motivational Quote */}
+      <motion.div variants={itemVariants} style={{ marginTop: 24 }}>
+        <Card style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <div style={{ width: 48, height: 48, borderRadius: 24, background: `${themeColor}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+              <Quote size={20} color={themeColor} />
             </div>
-            <Row gutter={16} style={{ marginTop: 16, textAlign: 'center' }}>
-              <Col span={8}>
-                <Title level={4} style={{ margin: 0, color: '#00f2fe' }}>12</Title>
-                <Text style={{ color: '#94a3b8', fontSize: 12 }}>Lessons</Text>
+            <div>
+               <Title level={5} style={{ color: '#e2e8f0', margin: '0 0 8px 0', fontWeight: 400, fontStyle: 'italic' }}>"{dailyQuote.text}"</Title>
+               <Text style={{ color: '#64748b', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>— {dailyQuote.author}</Text>
+            </div>
+          </div>
+        </Card>
+      </motion.div>
+
+      {/* Premium Protocol */}
+      {!user?.isPremium && (
+        <motion.div variants={itemVariants} style={{ marginTop: 24 }}>
+          <Card style={{ background: 'linear-gradient(90deg, #1e1b4b 0%, #312e81 100%)', border: '1px solid #4f46e5', borderRadius: 16 }} bodyStyle={{ padding: '24px 32px' }}>
+            <Row justify="space-between" align="middle">
+              <Col>
+                <Title level={4} style={{ color: '#818cf8', margin: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <Award size={20} color="#818cf8"/> AI Premium Protocol
+                </Title>
+                <Text style={{ color: '#c7d2fe' }}>Unlock unlimited Mock FAANG Interviews and dedicated Cloud infrastructure.</Text>
               </Col>
-              <Col span={8}>
-                <Title level={4} style={{ margin: 0, color: '#faad14' }}>4</Title>
-                <Text style={{ color: '#94a3b8', fontSize: 12 }}>Badges</Text>
-              </Col>
-              <Col span={8}>
-                <Title level={4} style={{ margin: 0, color: '#52c41a' }}>14h</Title>
-                <Text style={{ color: '#94a3b8', fontSize: 12 }}>Time</Text>
+              <Col>
+                <Button size="large" onClick={handlePremium} style={{ background: '#4f46e5', color: '#fff', border: 'none', fontWeight: 600, borderRadius: 8, padding: '0 32px' }}>
+                  Upgrade Intelligence - ₹499
+                </Button>
               </Col>
             </Row>
           </Card>
-        </Col>
-
-        {/* Dynamic Leaderboard */}
-        <Col xs={24} md={8}>
-          <Card className="glass-card" title={<span style={{ color: 'var(--text-color)' }}>🏆 Global Leaderboard</span>} bordered={false}>
-             <List
-              itemLayout="horizontal"
-              dataSource={[
-                { name: 'Alice', xp: '14,200', rank: 1, color: '#faad14' },
-                { name: 'Bob', xp: '12,400', rank: 2, color: '#d4af37' },
-                { name: 'Charlie', xp: '10,100', rank: 3, color: '#cd7f32' },
-                { name: user?.user_metadata?.name || 'You', xp: xp.toLocaleString(), rank: 42, color: dashboardThemeColor }
-              ]}
-              renderItem={item => (
-                <List.Item style={{ borderBottom: '1px solid var(--border-color)', padding: '12px 0' }}>
-                  <List.Item.Meta
-                    avatar={
-                      <div style={{ width: 32, height: 32, borderRadius: 16, background: `linear-gradient(135deg, ${item.color}, #000)`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                        {item.rank}
-                      </div>
-                    }
-                    title={<span style={{ color: 'var(--text-color)' }}>{item.name} {item.rank === 1 && '👑'}</span>}
-                    description={<span style={{ color: item.color }}>{item.xp} XP</span>}
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-
-        {/* AI Personalized Recommendations */}
-        <Col xs={24} md={8}>
-          <Card className="glass-card"
-            title={<><TrendingUp size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: dashboardThemeColor }}/><span style={{ color: 'var(--text-color)' }}>Smart Path</span></>}
-            bordered={false}
-          >
-            <List
-              itemLayout="horizontal"
-              dataSource={topicScores}
-              renderItem={item => {
-                const rec = getRecommendation(item.score);
-                return (
-                  <List.Item
-                    actions={[
-                      <Button className="gradient-btn" size="small" style={{ borderRadius: 8, padding: '0 16px' }} onClick={() => navigate(`/dashboard/course/${item.path}`)}>
-                        Start
-                      </Button>
-                    ]}
-                    style={{ borderBottom: '1px solid var(--border-color)' }}
-                  >
-                    <List.Item.Meta
-                      avatar={<Progress type="dashboard" percent={item.score} size={44} showInfo={false} strokeColor={rec.color} trailColor="var(--border-color)" />}
-                      title={<span style={{ color: 'var(--text-color)' }}>{item.name}</span>}
-                      description={<span style={{ color: rec.color, fontSize: 12 }}>→ {rec.text}</span>}
-                    />
-                  </List.Item>
-                );
-              }}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Premium Course Upsell Box */}
-      {!user?.isPremium && (
-        <Card className="glass-card" style={{ marginTop: 24, background: 'rgba(0,0,0,0.2)' }} bordered={false}>
-          <Row justify="space-between" align="middle">
-            <Col>
-              <Title level={4} style={{ color: '#faad14', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Award size={20} /> Upgrade to AI Premium
-              </Title>
-              <Text style={{ color: '#94a3b8' }}>Get access to 1-on-1 AI mock interviews and unlimited course downloads.</Text>
-            </Col>
-            <Col>
-              <Button size="large" onClick={handlePremium} style={{ background: '#faad14', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: 8 }}>
-                Get Premium - ₹499
-              </Button>
-            </Col>
-          </Row>
-        </Card>
+        </motion.div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

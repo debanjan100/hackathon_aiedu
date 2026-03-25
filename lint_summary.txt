@@ -1,0 +1,44 @@
+D:\Codebase\hackathon_aiedu\src\App.jsx:2 'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\context\AuthContext.jsx:65 Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+D:\Codebase\hackathon_aiedu\src\context\ThemeContext.jsx:6 Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components.
+D:\Codebase\hackathon_aiedu\src\layouts\MainLayout.jsx:21 'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Course.jsx:5 'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Course.jsx:15 'navigate' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Course.jsx:121 Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `allQuestions`, but the source dependencies were [search, filterTopic, filterDiff]. Inferred different dependency than source.
+
+  119 |   };
+  120 |
+> 121 |   const filteredQuestions = useMemo(() => {
+      |                                     ^^^^^^^
+> 122 |     return allQuestions.filter(item => {
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 123 |       const matchSearch = item.q.toLowerCase().includes(search.toLowerCase());
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 124 |       const matchTopic = filterTopic === 'All' || item.topic === filterTopic;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 125 |       const matchDiff = filterDiff === 'All' || item.difficulty === filterDiff;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 126 |       return matchSearch && matchTopic && matchDiff;
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 127 |     });
+      | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> 128 |   }, [search, filterTopic, filterDiff]);
+      | ^^^^ Could not preserve existing manual memoization
+  129 |
+  130 |   return (
+  131 |     <div style={{ maxWidth: 1000, margin: '0 auto', paddingBottom: 40 }}>
+D:\Codebase\hackathon_aiedu\src\pages\Course.jsx:128 React Hook useMemo has a missing dependency: 'allQuestions'. Either include it or remove the dependency array.
+D:\Codebase\hackathon_aiedu\src\pages\Dashboard.jsx:5 'axios' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Dashboard.jsx:127 'err' is defined but never used.
+D:\Codebase\hackathon_aiedu\src\pages\Landing.jsx:5 'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Roadmap.jsx:8 'motion' is defined but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Roadmap.jsx:118 'buildCareerTree' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Roadmap.jsx:156 'setTreeNodes' is assigned a value but never used. Allowed unused vars must match /^[A-Z_]/u.
+D:\Codebase\hackathon_aiedu\src\pages\Roadmap.jsx:371 'handleCareerSelect' is not defined.
+D:\Codebase\hackathon_aiedu\src\pages\StudyPlanner.jsx:18 'error' is defined but never used.
+D:\Codebase\hackathon_aiedu\src\pages\StudyPlanner.jsx:33 'err' is defined but never used.
+D:\Codebase\hackathon_aiedu\src\pages\StudyPlanner.jsx:42 'err' is defined but never used.
+D:\Codebase\hackathon_aiedu\src\pages\StudyPlanner.jsx:57 'err' is defined but never used.
+D:\Codebase\hackathon_aiedu\src\pages\StudyPlanner.jsx:111 'onChange' is defined but never used.

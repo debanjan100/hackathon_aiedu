@@ -15,7 +15,7 @@ const StudyPlanner = () => {
   useEffect(() => {
     if (user?.id) {
       supabase.from('tasks').select('*').eq('user_id', user.id)
-        .then(({ data, error }) => { if (data) setTasks(data); })
+        .then(({ data }) => { if (data) setTasks(data); })
     }
   }, [user]);
 
@@ -30,7 +30,7 @@ const StudyPlanner = () => {
       setTasks([...tasks, data]);
       setNewTask('');
       message.success('Task Added! Drag it to the calendar to schedule.');
-    } catch(err) { 
+    } catch { 
       message.error('Failed to add task'); 
     }
   };
@@ -39,7 +39,7 @@ const StudyPlanner = () => {
     try {
       await supabase.from('tasks').delete().eq('id', id);
       setTasks(tasks.filter(t => t.id !== id));
-    } catch(err) {
+    } catch {
       message.error('Failed to delete task');
     }
   };
@@ -54,7 +54,7 @@ const StudyPlanner = () => {
       if (error) throw error;
       setTasks(tasks.map(t => t.id === taskId ? data : t));
       message.success('Task Scheduled!');
-    } catch(err) {
+    } catch {
       message.error('Failed to schedule task');
     }
   };
@@ -108,7 +108,7 @@ const StudyPlanner = () => {
             <Calendar 
               cellRender={cellRender} 
               style={{ background: 'transparent' }} 
-              headerRender={({ value, onChange }) => {
+              headerRender={({ value }) => {
                 const start = 0; const end = 12; const monthOptions = [];
                 for (let i = start; i < end; i++) monthOptions.push(<option key={i} value={i} className="month-item">{dayjs().month(i).format('MMM')}</option>);
                 return (
