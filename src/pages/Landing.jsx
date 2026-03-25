@@ -2,6 +2,7 @@ import React from 'react';
 import { Row, Col, Typography, Button, Space, Card } from 'antd';
 import { Sparkles, BrainCircuit, Microscope, Scale, TrendingUp, Cpu, ChevronRight, Zap } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const { Title, Text } = Typography;

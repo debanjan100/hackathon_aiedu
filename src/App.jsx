@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { AnimatePresence, motion } from 'framer-motion';
 import MainLayout from './layouts/MainLayout';
 import Dashboard from './pages/Dashboard';
@@ -11,6 +12,7 @@ import Signup from './pages/Signup';
 import Landing from './pages/Landing';
 import StudyPlanner from './pages/StudyPlanner';
 import Roadmap from './pages/Roadmap';
+import ProblemDeck from './pages/ProblemDeck';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -54,6 +56,7 @@ function AppRoutes() {
           <Route path="analytics" element={<PageWrapper><Analytics /></PageWrapper>} />
           <Route path="planner" element={<PageWrapper><StudyPlanner /></PageWrapper>} />
           <Route path="roadmap" element={<PageWrapper><Roadmap /></PageWrapper>} />
+          <Route path="problems" element={<PageWrapper><ProblemDeck /></PageWrapper>} />
           <Route path="course/:topicId" element={<PageWrapper><Course /></PageWrapper>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
