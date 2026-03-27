@@ -15,9 +15,11 @@ import {
   RefreshCw,
   Moon,
   Sun,
-  Compass
+  Compass,
+  Code
 } from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
@@ -130,6 +132,7 @@ const MainLayout = () => {
   const menuItems = [
     { key: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { key: '/dashboard/roadmap', icon: <Compass size={18} />, label: 'Smart Path' },
+    { key: '/dashboard/problems', icon: <Code size={18} />, label: 'Problem Deck' },
     { key: '/dashboard/planner', icon: <Calendar size={18} />, label: 'Study Planner' },
     { key: '/dashboard/analytics', icon: <BarChart2 size={18} />, label: 'Analytics' },
     { key: '/dashboard/profile', icon: <User size={18} />, label: 'Profile' },

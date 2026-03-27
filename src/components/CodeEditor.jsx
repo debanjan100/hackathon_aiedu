@@ -81,6 +81,7 @@ CRITICAL: Do not include ANY conversational text. Do not use markdown backticks.
     
     try {
       const prompt = `You are an elite Senior Staff Engineer mentoring a Junior developer learning ${language}.
+They are attempting to solve the following objective: "${questionName}".
 The user wrote the following broken code:
 
 ${code}

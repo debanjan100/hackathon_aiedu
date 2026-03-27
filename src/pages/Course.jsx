@@ -1,7 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { Typography, Card, Tag, Select, Row, Col, Button, Input, message } from 'antd';
 import { BookOpen, AlertCircle, PlayCircle, Download, Search, Filter, Mic } from 'lucide-react';
-import { useParams, useNavigate, useOutletContext } from 'react-router-dom';
+import { useParams, useOutletContext } from 'react-router-dom';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import CodeEditor from '../components/CodeEditor';
 import CaseStudyEditor from '../components/CaseStudyEditor';
@@ -12,7 +13,6 @@ const { Option } = Select;
 
 const Course = () => {
   const { topicId } = useParams();
-  const navigate = useNavigate();
   const { openMockInterview } = useOutletContext() || {};
   const { user } = useAuth();
   
@@ -85,12 +85,17 @@ const Course = () => {
     };
   }, [major]);
 
-  const topics = domainData.topics;
-  const allQuestions = domainData.questions;
+  const isSandboxMode = topicId?.startsWith('sandbox-');
+  const sandboxTitle = isSandboxMode ? decodeURIComponent(topicId.replace('sandbox-', '')).split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : '';
 
-  const initialTopic = topicId && topicId !== 'practice' 
+  const topics = isSandboxMode ? ['All', 'Generative Module'] : domainData.topics;
+  const allQuestions = isSandboxMode ? [
+    { id: 'sbx1', topic: 'Generative Module', q: sandboxTitle + ' Mastery Challenge', difficulty: 'Adaptive' }
+  ] : domainData.questions;
+
+  const initialTopic = isSandboxMode ? 'Generative Module' : (topicId && topicId !== 'practice' 
     ? topics.find(t => t.toLowerCase().includes(topicId)) || 'All' 
-    : 'All';
+    : 'All');
 
   const [search, setSearch] = useState('');
   const [filterTopic, setFilterTopic] = useState(initialTopic);
@@ -125,7 +130,7 @@ const Course = () => {
       const matchDiff = filterDiff === 'All' || item.difficulty === filterDiff;
       return matchSearch && matchTopic && matchDiff;
     });
-  }, [search, filterTopic, filterDiff]);
+  }, [search, filterTopic, filterDiff, allQuestions]);
 
   return (
     <div style={{ maxWidth: 1000, margin: '0 auto', paddingBottom: 40 }}>
@@ -135,9 +140,11 @@ const Course = () => {
           <Col xs={24} md={14}>
             <Title level={2} style={{ color: 'var(--heading-color)', margin: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
               <BookOpen color={domainData.iconColor} size={32} /> 
-              {domainData.title}
+              {isSandboxMode ? 'AI Generative Sandbox' : domainData.title}
             </Title>
-            <Text style={{ color: 'var(--text-secondary)' }}>{domainData.subtitle}</Text>
+            <Text style={{ color: 'var(--text-secondary)' }}>
+              {isSandboxMode ? `Llama-3 architecture dynamically provisioning environment for: ${sandboxTitle}` : domainData.subtitle}
+            </Text>
           </Col>
           <Col xs={24} md={8} style={{ textAlign: 'right' }}>
             <Button icon={<Download size={16}/>} type="primary" className="gradient-btn" style={{ borderRadius: 8, padding: '0 24px', height: 40 }} onClick={() => message.success('Downloading Master DSA PDF Notes...')}>
