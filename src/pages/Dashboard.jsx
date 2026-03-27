@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Row, Col, Card, Typography, Select, Progress, List, Tag, Badge, Button, message } from 'antd';
-import { TrendingUp, Award, Calendar, ChevronRight } from 'lucide-react';
+import { Row, Col, Card, Typography, Progress, List, Tag, Badge, Button, message } from 'antd';
+import { TrendingUp, Award, Calendar, ChevronRight, Mic } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
+import PaymentModal from '../components/PaymentModal';
+import Leaderboard from '../components/Leaderboard';
 
 const { Title, Text } = Typography;
 
@@ -13,23 +16,27 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [xp, setXp] = useState(0);
 
+  // Local state to keep UI updated instantly after payment success
+  const [isPremiumActive, setIsPremiumActive] = useState(user?.user_metadata?.isPremium === true || user?.isPremium === true);
+
+  const shouldReduceMotion = useReducedMotion();
+  const buttonHoverProps = shouldReduceMotion ? {} : { whileHover: { scale: 1.02 }, whileTap: { scale: 0.98 } };
+
   useEffect(() => {
     if (user?.id) {
-       supabase.from('progress').select('xp_gained').eq('user_id', user.id)
-            .then(({ data }) => {
-               if (data && data.length > 0) {
-                 const totalXp = data.reduce((acc, curr) => acc + (curr.xp_gained || 0), 0);
-                 setXp(totalXp);
-               }
-            })
-            .catch(err => console.error(err));
+      supabase.from('progress').select('xp_gained').eq('user_id', user.id)
+        .then(({ data }) => {
+          if (data && data.length > 0) {
+            const totalXp = data.reduce((acc, curr) => acc + (curr.xp_gained || 0), 0);
+            setXp(totalXp);
+          }
+        })
+        .catch(err => console.error(err));
     }
   }, [user]);
 
-  // Phase 18: Universal Education Overhaul
-  // Dynamically configure the dashboard payload based on the user's Academic Major
   const major = user?.user_metadata?.course || 'Computer Science';
-  
+
   let topicScores = [];
   let dashboardHeroImage = "";
   let dashboardTagline = "";
@@ -43,7 +50,7 @@ const Dashboard = () => {
     ];
     dashboardHeroImage = "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?q=80&w=800&auto=format&fit=crop";
     dashboardTagline = "Ready to continue your medical diagnostic training?";
-    dashboardThemeColor = "#10b981"; // Emerald
+    dashboardThemeColor = "#10b981";
   } else if (major.includes('Business')) {
     topicScores = [
       { name: 'Macroeconomics: Market Trends', score: 20, path: 'macro' },
@@ -52,7 +59,7 @@ const Dashboard = () => {
     ];
     dashboardHeroImage = "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop";
     dashboardTagline = "Ready to evaluate today's corporate environments?";
-    dashboardThemeColor = "#f59e0b"; // Amber
+    dashboardThemeColor = "#f59e0b";
   } else if (major.includes('Law')) {
     topicScores = [
       { name: 'Constitutional Law', score: 55, path: 'con-law' },
@@ -60,7 +67,7 @@ const Dashboard = () => {
     ];
     dashboardHeroImage = "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?q=80&w=800&auto=format&fit=crop";
     dashboardTagline = "Ready to defend your legal logic in court?";
-    dashboardThemeColor = "#8b5cf6"; // Violet
+    dashboardThemeColor = "#8b5cf6";
   } else if (major.includes('Humanities')) {
     topicScores = [
       { name: 'Western Philosophy', score: 80, path: 'philosophy' },
@@ -68,9 +75,8 @@ const Dashboard = () => {
     ];
     dashboardHeroImage = "https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?q=80&w=800&auto=format&fit=crop";
     dashboardTagline = "Ready to deconstruct classical literature?";
-    dashboardThemeColor = "#ec4899"; // Pink
+    dashboardThemeColor = "#ec4899";
   } else {
-    // Default: Computer Science
     topicScores = [
       { name: 'Trees & Graphs', score: 35, path: 'trees' },
       { name: 'Arrays & Hashing', score: 85, path: 'arrays' },
@@ -78,7 +84,7 @@ const Dashboard = () => {
     ];
     dashboardHeroImage = "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop";
     dashboardTagline = "Ready to continue your AI-powered coding journey?";
-    dashboardThemeColor = "#00f2fe"; // Cyan
+    dashboardThemeColor = "#00f2fe";
   }
 
   const getRecommendation = (score) => {
@@ -87,50 +93,8 @@ const Dashboard = () => {
     return { text: 'Excellent! Ready for mock interviews.', color: '#52c41a' };
   };
 
-  const handlePremium = async () => {
-    try {
-      // Direct integration with the Supabase Serverless payment module
-      const { data: orderData, error: orderErr } = await supabase.functions.invoke('payment', {
-        body: { action: 'create-order' }
-      });
-      if (orderErr) throw orderErr;
-
-      const options = {
-        key: 'rzp_test_mock', // using mock key for the checkout widget demo
-        amount: orderData.amount,
-        currency: orderData.currency,
-        name: 'AI Edu Premium',
-        description: 'Lifetime Mock Interviews',
-        order_id: orderData.id,
-        handler: async function (response) {
-           const { data: verificationData, error: verifyErr } = await supabase.functions.invoke('payment', {
-             body: { action: 'verify-payment', ...response, userId: user?.id }
-           });
-           
-           if (!verifyErr && verificationData?.success) {
-               // Update actual database user
-               await supabase.from('users').update({ isPremium: true }).eq('id', user.id);
-               message.success('Premium Unlocked! 🎉');
-               if (login && token) {
-                 login({ ...user, isPremium: true }, token);
-               }
-           } else {
-               message.error('Payment verification failed securely.');
-           }
-        },
-        prefill: { name: user?.name, email: user?.email },
-        theme: { color: '#00f2fe' }
-      };
-      
-      const rzp1 = new window.Razorpay(options);
-      rzp1.open();
-    } catch(err) {
-      message.error("Could not initiate payment system on edge.");
-    }
-  };
-
   return (
-    <div style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
+    <div className="dashboard-grid" style={{ maxWidth: 1200, margin: '0 auto', paddingBottom: 40 }}>
       {/* Welcome Banner */}
       <Row gutter={[24, 24]} align="middle" style={{ marginBottom: 32, padding: '32px 40px', background: `linear-gradient(135deg, ${dashboardThemeColor}22 0%, ${dashboardThemeColor}05 100%)`, borderRadius: 24, border: `1px solid ${dashboardThemeColor}33` }}>
         <Col xs={24} md={16}>
@@ -142,11 +106,13 @@ const Dashboard = () => {
           </Text>
           <div style={{ marginTop: 24, display: 'flex', gap: 12 }}>
             <Tag color="purple" style={{ padding: '6px 16px', fontSize: 14, borderRadius: 12, border: 'none', background: 'var(--card-bg)' }}>
-               {major} Track
+              {major} Track
             </Tag>
-            <Button type="primary" size="large" className="gradient-btn" style={{ background: dashboardThemeColor, borderColor: dashboardThemeColor, borderRadius: 8, padding: '0 32px' }} onClick={() => navigate('/dashboard/course/practice')}>
-              Access Training Arena
-            </Button>
+            <motion.div {...buttonHoverProps} style={{ display: 'inline-block' }}>
+              <Button type="primary" size="large" className="gradient-btn" style={{ background: dashboardThemeColor, borderColor: dashboardThemeColor, borderRadius: 8, padding: '0 32px' }} onClick={() => navigate('/dashboard/course/practice')}>
+                Access Training Arena
+              </Button>
+            </motion.div>
           </div>
         </Col>
         <Col xs={24} md={8} style={{ textAlign: 'center' }}>
@@ -159,7 +125,7 @@ const Dashboard = () => {
         <Col xs={24} md={8}>
           <Card className="glass-card" title={<span style={{ color: 'var(--text-color)' }}>Overall Progress</span>} bordered={false}>
             <div style={{ textAlign: 'center', padding: '20px 0' }}>
-              <Progress type="circle" percent={70} strokeColor={{ '0%': dashboardThemeColor, '100%': '#fff' }}
+              <Progress type="circle" percent={70} size={180} strokeColor={{ '0%': dashboardThemeColor, '100%': '#fff' }}
                 trailColor="var(--border-color)"
                 format={percent => <span style={{ color: 'var(--text-color)', fontSize: 22, fontWeight: 700 }}>{percent}%</span>} />
               
@@ -176,7 +142,7 @@ const Dashboard = () => {
                 </div>
               </div>
             </div>
-            <Row gutter={16} style={{ marginTop: 16, textAlign: 'center' }}>
+            <Row gutter={[16, 16]} className="dashboard-stats-row" style={{ marginTop: 24, textAlign: 'center', background: 'rgba(255,255,255,0.02)', padding: '16px 0', borderRadius: 16 }}>
               <Col span={8}>
                 <Title level={4} style={{ margin: 0, color: '#00f2fe' }}>12</Title>
                 <Text style={{ color: '#94a3b8', fontSize: 12 }}>Lessons</Text>
@@ -193,38 +159,15 @@ const Dashboard = () => {
           </Card>
         </Col>
 
-        {/* Dynamic Leaderboard */}
+        {/* New Premium Leaderboard */}
         <Col xs={24} md={8}>
-          <Card className="glass-card" title={<span style={{ color: 'var(--text-color)' }}>🏆 Global Leaderboard</span>} bordered={false}>
-             <List
-              itemLayout="horizontal"
-              dataSource={[
-                { name: 'Alice', xp: '14,200', rank: 1, color: '#faad14' },
-                { name: 'Bob', xp: '12,400', rank: 2, color: '#d4af37' },
-                { name: 'Charlie', xp: '10,100', rank: 3, color: '#cd7f32' },
-                { name: user?.user_metadata?.name || 'You', xp: xp.toLocaleString(), rank: 42, color: dashboardThemeColor }
-              ]}
-              renderItem={item => (
-                <List.Item style={{ borderBottom: '1px solid var(--border-color)', padding: '12px 0' }}>
-                  <List.Item.Meta
-                    avatar={
-                      <div style={{ width: 32, height: 32, borderRadius: 16, background: `linear-gradient(135deg, ${item.color}, #000)`, color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                        {item.rank}
-                      </div>
-                    }
-                    title={<span style={{ color: 'var(--text-color)' }}>{item.name} {item.rank === 1 && '👑'}</span>}
-                    description={<span style={{ color: item.color }}>{item.xp} XP</span>}
-                  />
-                </List.Item>
-              )}
-            />
-          </Card>
+          <Leaderboard />
         </Col>
 
         {/* AI Personalized Recommendations */}
         <Col xs={24} md={8}>
           <Card className="glass-card"
-            title={<><TrendingUp size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: dashboardThemeColor }}/><span style={{ color: 'var(--text-color)' }}>Smart Path</span></>}
+            title={<><TrendingUp size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: dashboardThemeColor }} /><span style={{ color: 'var(--text-color)' }}>Smart Path</span></>}
             bordered={false}
           >
             <List
@@ -235,9 +178,11 @@ const Dashboard = () => {
                 return (
                   <List.Item
                     actions={[
-                      <Button className="gradient-btn" size="small" style={{ borderRadius: 8, padding: '0 16px' }} onClick={() => navigate(`/dashboard/course/${item.path}`)}>
-                        Start
-                      </Button>
+                      <motion.div {...buttonHoverProps} style={{ display: 'inline-block' }}>
+                        <Button className="gradient-btn" size="small" style={{ borderRadius: 8, padding: '0 16px' }} onClick={() => navigate(`/dashboard/course/${item.path}`)}>
+                          Start
+                        </Button>
+                      </motion.div>
                     ]}
                     style={{ borderBottom: '1px solid var(--border-color)' }}
                   >
@@ -254,10 +199,10 @@ const Dashboard = () => {
         </Col>
       </Row>
 
-      {/* Premium Course Upsell Box */}
-      {!user?.isPremium && (
+      {/* Premium Course Upsell Box or Success Teal Box */}
+      {!isPremiumActive ? (
         <Card className="glass-card" style={{ marginTop: 24, background: 'rgba(0,0,0,0.2)' }} bordered={false}>
-          <Row justify="space-between" align="middle">
+          <Row justify="space-between" align="middle" className="mobile-stack">
             <Col>
               <Title level={4} style={{ color: '#faad14', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Award size={20} /> Upgrade to AI Premium
@@ -265,9 +210,34 @@ const Dashboard = () => {
               <Text style={{ color: '#94a3b8' }}>Get access to 1-on-1 AI mock interviews and unlimited course downloads.</Text>
             </Col>
             <Col>
-              <Button size="large" onClick={handlePremium} style={{ background: '#faad14', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: 8 }}>
-                Get Premium - ₹499
-              </Button>
+              <motion.div {...buttonHoverProps} style={{ display: 'inline-block' }}>
+                <PaymentModal
+                  user={user}
+                  onSuccess={() => setIsPremiumActive(true)}
+                  buttonProps={{
+                    size: 'large',
+                    style: { background: '#faad14', color: '#000', border: 'none', fontWeight: 'bold', borderRadius: 8 }
+                  }}
+                />
+              </motion.div>
+            </Col>
+          </Row>
+        </Card>
+      ) : (
+        <Card className="glass-card" style={{ marginTop: 24, background: 'rgba(0, 229, 255, 0.05)', border: '1px solid rgba(0, 229, 255, 0.3)', boxShadow: '0 0 20px rgba(0, 229, 255, 0.1)' }} bordered={false}>
+          <Row justify="space-between" align="middle" className="mobile-stack">
+            <Col>
+              <Title level={4} style={{ color: '#00e5ff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                ✨ AI Premium Active
+              </Title>
+              <Text style={{ color: '#94a3b8' }}>Enjoy unlimited access to all courses, 1-on-1 AI mentorship, and exclusive DSA problem sets.</Text>
+            </Col>
+            <Col>
+               <motion.div {...buttonHoverProps}>
+                 <Button type="primary" size="large" onClick={() => navigate('/mock-interview')} className="gradient-btn" style={{ fontSize: 16, height: 48, borderRadius: 12, padding: '0 24px', display: 'flex', alignItems: 'center', gap: 8 }}>
+                   <Mic size={18} /> Enter Mock Interview
+                 </Button>
+               </motion.div>
             </Col>
           </Row>
         </Card>

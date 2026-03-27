@@ -23,6 +23,8 @@ const defaultCode = {
 };
 
 const CodeEditor = ({ visible, onClose, questionName }) => {
+  const isMobile = window.innerWidth < 768;
+
   const [language, setLanguage] = useState('javascript');
   const [code, setCode] = useState(defaultCode.javascript);
   const [output, setOutput] = useState('');
@@ -154,24 +156,24 @@ Identify the root flaw. Return your response STRICTLY AND EXCLUSIVELY in raw JSO
         </div>
       </div>
       
-      <Row>
-        <Col span={14} style={{ borderRight: '1px solid rgba(255,255,255,0.05)' }}>
+      <Row gutter={[0, 16]}>
+        <Col xs={24} md={14} style={{ borderRight: isMobile ? 'none' : '1px solid rgba(255,255,255,0.05)', borderBottom: isMobile ? '1px solid rgba(255,255,255,0.05)' : 'none' }}>
           <Editor
-            height="60vh"
+            height={isMobile ? "400px" : "60vh"}
             language={language}
             theme="vs-dark"
             value={code}
             onChange={(val) => setCode(val)}
             options={{
               minimap: { enabled: false },
-              fontSize: 15,
+              fontSize: isMobile ? 13 : 15,
               fontFamily: '"JetBrains Mono", "Fira Code", monospace',
               scrollBeyondLastLine: false,
               padding: { top: 16 }
             }}
           />
         </Col>
-        <Col span={10}>
+        <Col xs={24} md={10}>
           <div style={{ padding: 16, height: '100%', background: '#0d1117', display: 'flex', flexDirection: 'column' }}>
             <Title level={5} style={{ margin: '0 0 12px 0', color: '#8b949e', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>Console Output</Title>
             <div style={{ flex: 1, overflowY: 'auto', background: '#010409', border: '1px solid #30363d', borderRadius: 12, padding: 20, fontFamily: '"JetBrains Mono", "Fira Code", monospace', color: '#56d364', whiteSpace: 'pre-wrap', fontSize: 15, lineHeight: 1.6, boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)' }}>

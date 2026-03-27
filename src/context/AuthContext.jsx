@@ -26,11 +26,23 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  const isMockMode = !import.meta.env.VITE_SUPABASE_ANON_KEY || 
+                     import.meta.env.VITE_SUPABASE_ANON_KEY === 'public-anon-key' || 
+                     import.meta.env.VITE_SUPABASE_ANON_KEY.startsWith('sb_publishable_');
+
   const signup = async (email, password, name) => {
+    if (isMockMode) {
+      const mockUser = { id: 'mock-user-123', email, user_metadata: { name, skillLevel: 'Beginner', isPremium: false } };
+      setSession({ user: mockUser, access_token: 'mock-jwt-token' });
+      setUser(mockUser);
+      message.success('Account created successfully (Mock Mode)!');
+      return { user: mockUser, session: { access_token: 'mock-jwt-token' } };
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
-      options: { 
+      options: {
         data: { name, skillLevel: 'Beginner', isPremium: false },
         emailRedirectTo: `${window.location.origin}/dashboard`
       }
@@ -41,6 +53,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const login = async (email, password) => {
+    if (isMockMode) {
+      const mockUser = { id: 'mock-user-123', email, user_metadata: { name: 'Demo User', skillLevel: 'Intermediate' } };
+      setSession({ user: mockUser, access_token: 'mock-jwt-token' });
+      setUser(mockUser);
+      message.success('Logged in successfully (Mock Mode)!');
+      return { user: mockUser, session: { access_token: 'mock-jwt-token' } };
+    }
+
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     message.success('Logged in successfully!');

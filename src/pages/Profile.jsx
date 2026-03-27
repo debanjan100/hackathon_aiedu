@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { Form, Input, InputNumber, Select, Button, Card, Typography, Divider, Upload, Avatar, message, Row, Col } from 'antd';
-import { User, Book, GraduationCap, Camera } from 'lucide-react';
+import { User, Book, GraduationCap, Camera, Award } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 
 const Profile = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [avatarUrl, setAvatarUrl] = useState(null);
 
   const onFinish = async (values) => {
@@ -157,17 +159,32 @@ const Profile = () => {
 
           <Divider style={{ borderColor: 'var(--border-color)' }} />
 
-          <Form.Item label={<span style={{ color: '#e2e8f0' }}>Current Skill Level (Auto-detected)</span>} name="skillLevel">
-            <Select size="large" disabled>
-              <Select.Option value="Beginner">Beginner</Select.Option>
-              <Select.Option value="Intermediate">Intermediate</Select.Option>
-              <Select.Option value="Advanced">Advanced</Select.Option>
-            </Select>
-          </Form.Item>
-          <Text style={{ display: 'inline-block', marginTop: -12, marginBottom: 24, fontSize: 13, color: '#94a3b8' }}>
-            <GraduationCap size={14} style={{ marginRight: 4, verticalAlign: 'middle', color: '#00f2fe' }} />
-            Skill level is automatically determined by your assessment scores.
-          </Text>
+          <Row gutter={16}>
+             <Col xs={24} md={12}>
+                <Form.Item label={<span style={{ color: '#e2e8f0' }}>Current Skill Level (Auto-detected)</span>} name="skillLevel">
+                  <Select size="large" disabled>
+                    <Select.Option value="Beginner">Beginner</Select.Option>
+                    <Select.Option value="Intermediate">Intermediate</Select.Option>
+                    <Select.Option value="Advanced">Advanced</Select.Option>
+                  </Select>
+                </Form.Item>
+                <Text style={{ display: 'inline-block', marginTop: -12, marginBottom: 24, fontSize: 13, color: '#94a3b8' }}>
+                  <GraduationCap size={14} style={{ marginRight: 4, verticalAlign: 'middle', color: '#00f2fe' }} />
+                  Skill level is automatically determined by your assessment scores.
+                </Text>
+             </Col>
+             <Col xs={24} md={12}>
+                <div style={{ padding: 16, background: 'rgba(0, 229, 255, 0.05)', border: '1px solid rgba(0, 229, 255, 0.2)', borderRadius: 12, height: 'calc(100% - 24px)' }}>
+                  <Text style={{ display: 'block', color: 'var(--heading-color)', marginBottom: 8, fontSize: 16, fontWeight: 600 }}>
+                    <Award size={18} style={{ color: '#00e5ff', verticalAlign: 'middle', marginRight: 6 }}/> Official Certification
+                  </Text>
+                  <Text style={{ display: 'block', color: 'var(--text-muted)', fontSize: 14, marginBottom: 16 }}>Generate and download your AI-verified completion certificate.</Text>
+                  <Button type="primary" size="large" onClick={() => navigate('/dashboard/certificate')} style={{ background: '#00e5ff', color: '#000', fontWeight: 'bold', border: 'none', width: '100%', borderRadius: 8 }}>
+                    Claim Certificate
+                  </Button>
+                </div>
+             </Col>
+          </Row>
 
           <Form.Item>
             <Button className="gradient-btn" htmlType="submit" size="large" block style={{ borderRadius: 10, height: 48 }}>

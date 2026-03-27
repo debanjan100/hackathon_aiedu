@@ -105,20 +105,22 @@ const StudyPlanner = () => {
       <Row gutter={[24, 24]}>
         <Col xs={24} lg={16}>
           <Card className="glass-card" bordered={false} bodyStyle={{ padding: 12 }}>
-            <Calendar 
-              cellRender={cellRender} 
-              style={{ background: 'transparent' }} 
-              headerRender={({ value, onChange }) => {
-                const start = 0; const end = 12; const monthOptions = [];
-                for (let i = start; i < end; i++) monthOptions.push(<option key={i} value={i} className="month-item">{dayjs().month(i).format('MMM')}</option>);
-                return (
-                  <div style={{ padding: 12, display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', marginBottom: 12 }}>
-                    <Title level={4} style={{color: 'var(--text-color)', margin: 0}}>{value.format('MMMM YYYY')}</Title>
-                    <Tag icon={<Bell size={12} />} color="processing" style={{ borderRadius: 12, cursor: 'pointer' }}>Reminders On</Tag>
-                  </div>
-                );
-              }}
-            />
+            <div style={{ overflowX: 'auto', width: '100%' }}>
+              <Calendar 
+                cellRender={cellRender} 
+                style={{ background: 'transparent', minWidth: 600 }} 
+                headerRender={({ value, onChange }) => {
+                  const start = 0; const end = 12; const monthOptions = [];
+                  for (let i = start; i < end; i++) monthOptions.push(<option key={i} value={i} className="month-item">{dayjs().month(i).format('MMM')}</option>);
+                  return (
+                    <div style={{ padding: 12, display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', marginBottom: 12 }}>
+                      <Title level={4} style={{color: 'var(--text-color)', margin: 0}}>{value.format('MMMM YYYY')}</Title>
+                      <Tag icon={<Bell size={12} />} color="processing" style={{ borderRadius: 12, cursor: 'pointer' }}>Reminders On</Tag>
+                    </div>
+                  );
+                }}
+              />
+            </div>
           </Card>
         </Col>
 

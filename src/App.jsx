@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import MainLayout from './layouts/MainLayout';
+import AuthLayout from './layouts/AuthLayout';
+import Background3D from './components/Background3D';
 import Dashboard from './pages/Dashboard';
 import Profile from './pages/Profile';
 import Assessment from './pages/Assessment';
@@ -11,6 +13,8 @@ import Signup from './pages/Signup';
 import Landing from './pages/Landing';
 import StudyPlanner from './pages/StudyPlanner';
 import Roadmap from './pages/Roadmap';
+import MockInterview from './pages/MockInterview';
+import Certificate from './pages/Certificate';
 import { AuthProvider, useAuth } from './context/AuthContext';
 
 const ProtectedRoute = ({ children }) => {
@@ -25,7 +29,7 @@ const pageVariants = {
 };
 
 const PageWrapper = ({ children }) => (
-  <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }} className="page-transition-wrapper">
+  <motion.div initial="initial" animate="in" exit="out" variants={pageVariants} transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }} className="page-transition-wrapper">
     {children}
   </motion.div>
 );
@@ -38,8 +42,12 @@ function AppRoutes() {
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname.split('/')[1] || '/'}>
         <Route path="/" element={<PageWrapper>{isLoggedIn ? <Navigate to="/dashboard" replace /> : <Landing />}</PageWrapper>} />
-        <Route path="/login" element={<PageWrapper><Login /></PageWrapper>} />
-        <Route path="/signup" element={<PageWrapper><Signup /></PageWrapper>} />
+
+        <Route element={<PageWrapper><AuthLayout /></PageWrapper>}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+        </Route>
+
         <Route
           path="/dashboard"
           element={
@@ -55,6 +63,7 @@ function AppRoutes() {
           <Route path="planner" element={<PageWrapper><StudyPlanner /></PageWrapper>} />
           <Route path="roadmap" element={<PageWrapper><Roadmap /></PageWrapper>} />
           <Route path="course/:topicId" element={<PageWrapper><Course /></PageWrapper>} />
+          <Route path="certificate" element={<PageWrapper><Certificate /></PageWrapper>} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

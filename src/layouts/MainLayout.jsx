@@ -23,12 +23,12 @@ import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import { supabase } from '../config/supabaseClient';
+import TopNav from '../components/TopNav';
 
-const { Header, Sider, Content } = Layout;
+const { Content } = Layout;
 const { Title } = Typography;
 
 const MainLayout = () => {
-  const [collapsed, setCollapsed] = useState(false);
   const [chatOpen, setChatOpen] = useState(false);
   const [chatInput, setChatInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
@@ -131,54 +131,27 @@ const MainLayout = () => {
     { key: '/dashboard', icon: <LayoutDashboard size={18} />, label: 'Dashboard' },
     { key: '/dashboard/roadmap', icon: <Compass size={18} />, label: 'Smart Path' },
     { key: '/dashboard/planner', icon: <Calendar size={18} />, label: 'Study Planner' },
-    { key: '/dashboard/assessment', icon: <BrainCircuit size={18} />, label: 'Skill Assessment' },
     { key: '/dashboard/analytics', icon: <BarChart2 size={18} />, label: 'Analytics' },
     { key: '/dashboard/profile', icon: <User size={18} />, label: 'Profile' },
   ];
 
   return (
     <Layout style={{ minHeight: '100vh', background: 'transparent' }}>
-      <Sider collapsible collapsed={collapsed} onCollapse={(value) => setCollapsed(value)} trigger={null}>
-        <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: '64px' }}>
-          {!collapsed ? (
-            <Title level={4} style={{ margin: 0, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: 8 }}>
-              <Sparkles size={20} /> AI Edu
-            </Title>
-          ) : <Sparkles color="var(--primary-color)" />}
-        </div>
-        <Menu mode="inline" selectedKeys={[location.pathname]} items={menuItems} onClick={({ key }) => navigate(key)} />
-      </Sider>
-      <Layout style={{ background: 'transparent' }}>
-        <Header style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', zIndex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center' }}>
-            <Button type="text" icon={<MenuIcon size={20} color="var(--text-color)" />} onClick={() => setCollapsed(!collapsed)} style={{ marginRight: 16 }} />
-            <Title level={5} style={{ margin: 0, color: 'var(--text-color)' }}>AI Skill Development</Title>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-            {/* LeetCode Style Study Timer (Pomodoro XP trigger) */}
-            <div style={{ display: 'flex', alignItems: 'center', background: 'var(--card-bg)', padding: '4px 12px', borderRadius: 20, border: '1px solid var(--border-color)' }}>
-              <span style={{ fontFamily: 'monospace', fontSize: 16, color: 'var(--primary-color)', marginRight: 8 }}>
-                {String(Math.floor(timer / 60)).padStart(2, '0')}:{String(timer % 60).padStart(2, '0')}
-              </span>
-              <Button type="text" size="small" icon={isTimerActive ? <Pause size={14} color="#faad14"/> : <Play size={14} color="#52c41a"/>} onClick={() => setIsTimerActive(!isTimerActive)} />
-              <Button type="text" size="small" icon={<RefreshCw size={14} color="var(--text-muted)"/>} onClick={() => { setIsTimerActive(false); setTimer(0); }} />
-            </div>
-
-            {/* Theme Toggle */}
-            <Button type="text" onClick={toggleTheme} icon={isDark ? <Sun size={18} color="#faad14" /> : <Moon size={18} color="#0f172a" />} />
-
-            <Dropdown menu={userMenu} placement="bottomRight" trigger={['click']}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer' }}>
-                <Avatar style={{ background: 'linear-gradient(135deg, #00f2fe, #4facfe)', color: '#000', fontWeight: 'bold' }}>
-                  {user?.name?.[0]?.toUpperCase() || 'U'}
-                </Avatar>
-                <span style={{ color: 'var(--text-color)' }}>{user?.name || 'User'}</span>
-              </div>
-            </Dropdown>
-          </div>
-        </Header>
-        <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280, borderRadius: 8, overflow: 'auto' }}>
+      <TopNav
+        user={user}
+        handleLogout={handleLogout}
+        menuItems={menuItems}
+        location={location}
+        navigate={navigate}
+        timer={timer}
+        isTimerActive={isTimerActive}
+        setIsTimerActive={setIsTimerActive}
+        setTimer={setTimer}
+        isDark={isDark}
+        toggleTheme={toggleTheme}
+      />
+      <Layout style={{ background: 'transparent', paddingTop: 64 }}>
+        <Content style={{ margin: '24px auto', padding: '0 24px', maxWidth: 1400, width: '100%', minHeight: 280, borderRadius: 8, overflow: 'visible' }}>
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
@@ -208,7 +181,7 @@ const MainLayout = () => {
 
       <Drawer
         rootClassName="glass-drawer"
-        title={<><Sparkles size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: 'var(--primary-color)' }}/>AI Chat Tutor</>}
+        title={<><Sparkles size={18} style={{ marginRight: 8, verticalAlign: 'middle', color: 'var(--primary-color)'}}/><strong style={{color:'var(--primary-color)'}}>CognifyX</strong> AI Tutor</>}
         placement="right" onClose={() => setChatOpen(false)} open={chatOpen} width={400}
         styles={{ body: { display: 'flex', flexDirection: 'column', padding: 0 } }}
       >

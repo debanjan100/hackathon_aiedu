@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Form, Input, Button, Card, Typography, Divider, message as antMessage, Row, Col } from 'antd';
-import { Sparkles, Mail, Lock, User } from 'lucide-react';
+import { Form, Input, Button, Card, Typography, Divider, message as antMessage } from 'antd';
+import { Sparkles, Mail, Lock } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const { Title, Text } = Typography;
 
@@ -10,6 +11,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
 
   const onFinish = async (values) => {
     setLoading(true);
@@ -25,72 +27,123 @@ const Login = () => {
   };
 
   return (
-    <Row style={{ minHeight: '100vh', background: '#0f172a' }}>
-      {/* Left: Hero Illustration */}
-      <Col
-        xs={0} md={12}
-        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', overflow: 'hidden' }}
+    <motion.div
+      initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      style={{ width: '100%', display: 'flex', justifyContent: 'center' }}
+    >
+      <Card
+        bordered={false}
+        className="glass-card auth-card-body"
+        style={{
+          width: '100%',
+          maxWidth: 480,
+          background: 'rgba(255, 255, 255, 0.03)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: 24,
+        }}
+        bodyStyle={{ padding: 'var(--card-padding, 48px)' }}
       >
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(0,242,254,0.1) 0%, rgba(79,172,254,0.05) 100%)' }} />
-        <div style={{ textAlign: 'center', zIndex: 1, padding: 48 }}>
-          <img src="/images/ai-learning.png" alt="AI Learning" style={{ maxWidth: 460, width: '100%', filter: 'drop-shadow(0 0 40px rgba(0,242,254,0.4))' }} />
-          <Title level={2} style={{ color: 'var(--text-color)', marginTop: 32 }}>Learn Smarter with AI</Title>
-          <Text style={{ color: '#94a3b8', fontSize: 16 }}>Adaptive lessons. Personalized to you.</Text>
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <motion.div
+            animate={shouldReduceMotion ? {} : { rotate: 360 }}
+            transition={{ repeat: Infinity, duration: 8, ease: "linear" }}
+            style={{ display: 'inline-block', marginBottom: 16 }}
+          >
+            <Sparkles size={40} color="#00e5ff" />
+          </motion.div>
+          <Title level={2} style={{ color: '#fff', fontSize: '2rem', fontWeight: 700, margin: '0 0 8px 0' }}>
+            Welcome Back
+          </Title>
+          <Text style={{ color: '#8892a4', fontSize: '16px' }}>
+            Sign in to start your learning journey
+          </Text>
         </div>
-      </Col>
 
-      {/* Right: Form */}
-      <Col xs={24} md={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-        <Card
-          className="glass-card"
-          bordered={false}
-          style={{ width: '100%', maxWidth: 440, background: 'rgba(255,255,255,0.04)' }}
-        >
-          <div style={{ textAlign: 'center', marginBottom: 32 }}>
-            <Sparkles size={40} color="#00f2fe" style={{ marginBottom: 12 }} />
-            <Title level={3} style={{ color: 'var(--text-color)', margin: 0 }}>Welcome Back</Title>
-            <Text style={{ color: '#94a3b8' }}>Sign in to your AI Edu account</Text>
-          </div>
-
-          <Form name="login" layout="vertical" onFinish={onFinish} autoComplete="off">
-            <Form.Item name="email" rules={[{ required: true, type: 'email', message: 'Please enter a valid email!' }]}>
+        <Form name="login" layout="vertical" onFinish={onFinish} autoComplete="off">
+          <Form.Item name="email" rules={[{ required: true, type: 'email', message: 'Please enter a valid email!' }]}>
+            <motion.div whileFocus={shouldReduceMotion ? {} : { scale: 1.01 }}>
               <Input
-                prefix={<Mail size={16} color="#64748b" />}
+                className="auth-input"
+                prefix={<Mail size={16} color="#64748b" style={{ marginRight: 8 }} />}
                 placeholder="Email address"
                 size="large"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }}
+                style={{ borderRadius: 12, height: 48 }}
               />
-            </Form.Item>
-            <Form.Item name="password" rules={[{ required: true, message: 'Please enter your password!' }]}>
+            </motion.div>
+          </Form.Item>
+          <Form.Item name="password" rules={[{ required: true, message: 'Please enter your password!' }]}>
+            <motion.div whileFocus={shouldReduceMotion ? {} : { scale: 1.01 }}>
               <Input.Password
-                prefix={<Lock size={16} color="#64748b" />}
+                className="auth-input"
+                prefix={<Lock size={16} color="#64748b" style={{ marginRight: 8 }} />}
                 placeholder="Password"
                 size="large"
-                style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', borderRadius: 10 }}
+                style={{ borderRadius: 12, height: 48 }}
               />
-            </Form.Item>
-            <Form.Item>
-              <Button className="gradient-btn" htmlType="submit" size="large" block loading={loading} style={{ borderRadius: 10, height: 48, fontSize: 16 }}>
-                Sign In
-              </Button>
-            </Form.Item>
-          </Form>
-
-          <Text style={{ color: '#64748b', fontSize: 12, display: 'block', textAlign: 'center', marginBottom: 16 }}>
-            Demo: <strong style={{ color: '#00f2fe' }}>demo@aiedu.com</strong> / <strong style={{ color: '#00f2fe' }}>password123</strong>
+            </motion.div>
+          </Form.Item>
+          
+          <Text style={{ color: '#64748b', fontSize: 13, display: 'block', textAlign: 'center', marginBottom: 24 }}>
+            Demo: <strong style={{ color: '#00e5ff' }}>demo@aiedu.com</strong> / <strong style={{ color: '#00e5ff' }}>password123</strong>
           </Text>
 
-          <Divider style={{ borderColor: 'var(--border-color)', color: 'var(--text-muted)' }}>
-            <Text style={{ color: '#64748b' }}>New here?</Text>
-          </Divider>
-          <Link to="/signup">
-            <Button block size="large" ghost style={{ borderColor: 'rgba(0,242,254,0.4)', color: '#00f2fe', borderRadius: 10, height: 44 }}>
-              Create a Free Account
-            </Button>
-          </Link>
-        </Card>
-      </Col>
-    </Row>
+          <Form.Item style={{ marginBottom: 24 }}>
+            <motion.div
+              whileHover={shouldReduceMotion ? {} : { scale: 1.02, boxShadow: "0 0 20px rgba(0,198,255,0.4)" }}
+              whileTap={shouldReduceMotion ? {} : { scale: 0.97 }}
+              style={{ borderRadius: 12 }}
+            >
+              <Button
+                htmlType="submit"
+                block
+                loading={loading}
+                style={{
+                  background: 'linear-gradient(135deg, #00c6ff, #0072ff, #7b2ff7)',
+                  border: 'none',
+                  color: 'white',
+                  borderRadius: 12,
+                  height: 52,
+                  fontSize: 16,
+                  fontWeight: 700
+                }}
+              >
+                Sign In
+              </Button>
+            </motion.div>
+          </Form.Item>
+        </Form>
+
+        <Divider style={{ borderColor: 'rgba(255,255,255,0.1)', color: '#8892a4', margin: '24px 0' }}>
+          or continue with
+        </Divider>
+        
+        <Link to="/signup" style={{ textDecoration: 'none' }}>
+          <motion.div
+            whileHover={shouldReduceMotion ? {} : { backgroundColor: 'rgba(0,229,255,0.08)' }}
+            whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
+            style={{
+              border: '1px solid rgba(0,229,255,0.4)',
+              borderRadius: 12,
+              height: 52,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#00e5ff',
+              fontWeight: 600,
+              fontSize: 16,
+              cursor: 'pointer',
+              transition: 'background-color 0.2s ease'
+            }}
+          >
+            Create a Free Account
+          </motion.div>
+        </Link>
+      </Card>
+    </motion.div>
   );
 };
 
