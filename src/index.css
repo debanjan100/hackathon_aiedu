@@ -1,0 +1,1218 @@
+/* ============================================================
+   CognifyX AI — "The Obsidian Nexus" Design System
+   Deriving from cognitive_neon/DESIGN.md Stitch export
+   ============================================================ */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+/* Global smooth scroll */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ============================================================
+   DESIGN TOKENS — Obsidian Nexus Dark (default)
+   ============================================================ */
+:root {
+  /* Surface Hierarchy — Tonal Layering (always dark by default) */
+  --surface:                   #0D0D1A;
+  --surface-container-lowest:  #080811;
+  --surface-container-low:     #121224;
+  --surface-container:         rgba(255, 255, 255, 0.04);
+  --surface-container-high:    rgba(255, 255, 255, 0.08);
+  --surface-container-highest: rgba(255, 255, 255, 0.12);
+  --surface-variant:           rgba(255, 255, 255, 0.06);
+
+  /* Brand Colors */
+  --primary:            #00D8D6;
+  --primary-container:  #00A3A1;
+  --on-primary-fixed:   #002022;
+  --secondary:          #7C3AED;
+  --secondary-container:#5B21B6;
+
+  /* Text */
+  --on-surface:         #e2e2e2;
+  --on-surface-variant: #bac9ca;
+  --on-surface-muted:   #7a8a8b;
+
+  /* Outline */
+  --outline-variant:    #3b494a;
+
+  /* Legacy aliases (used by existing code) */
+  --primary-color:      #00D8D6;
+  --accent-color:       #7C3AED;
+  --bg-primary:         #0D0D1A;
+  --bg-secondary:       #121224;
+  --card-bg:            rgba(255, 255, 255, 0.04);
+  --text-color:         #e2e2e2;
+  --text-secondary:     #bac9ca;
+  --text-muted:         #6B7280;
+  --heading-color:      #e2e2e2;
+  --border-color:       rgba(255, 255, 255, 0.08);
+  --sidebar-bg:         #0a0a14;
+  --header-bg:          rgba(13,13,26,0.88);
+  --modal-bg:           rgba(13, 13, 26, 0.92);
+  --chat-ai-bg:         rgba(255, 255, 255, 0.04);
+
+  /* Spacing */
+  --radius-card: 1.5rem;   /* xl */
+  --radius-btn:  9999px;   /* full */
+  --radius-input: 0.75rem;
+
+  /* Progress / Streak (dark defaults) */
+  --progress-track:    rgba(255, 255, 255, 0.08);
+  --card-shadow:       0 4px 24px rgba(0, 0, 0, 0.4);
+  --card-shadow-hover: 0 8px 32px rgba(0, 216, 214, 0.12);
+}
+
+/* Light Mode override */
+[data-theme='light'] {
+  --surface:                   #F0F4FF;
+  --surface-container-lowest:  #FFFFFF;
+  --surface-container-low:     #FFFFFF;
+  --surface-container:         rgba(99, 102, 241, 0.05);
+  --surface-container-high:    rgba(99, 102, 241, 0.1);
+  --surface-container-highest: rgba(99, 102, 241, 0.15);
+  --surface-variant:           rgba(99, 102, 241, 0.07);
+
+  --primary:           #0099aa;
+  --primary-container: #00bcd4;
+  --on-primary-fixed:  #ffffff;
+  --secondary:         #6b4fa8;
+  --secondary-container: #7C3AED;
+
+  --on-surface:         #0f172a;
+  --on-surface-variant: #334155;
+  --on-surface-muted:   #64748B;
+  --outline-variant:    #CBD5E1;
+
+  /* Legacy aliases */
+  --primary-color:  #0099aa;
+  --accent-color:   #6b4fa8;
+  --bg-primary:     #F0F4FF;
+  --bg-secondary:   #FFFFFF;
+  --card-bg:        rgba(255, 255, 255, 0.95);
+  --text-color:     #0f172a;
+  --text-secondary: #334155;
+  --text-muted:     #64748B;
+  --heading-color:  #0f172a;
+  --border-color:   rgba(99, 102, 241, 0.15);
+  --sidebar-bg:     #ffffff;
+  --header-bg:      rgba(255, 255, 255, 0.88);
+  --modal-bg:       rgba(255, 255, 255, 0.95);
+  --chat-ai-bg:     rgba(0, 0, 0, 0.04);
+
+  /* New light mode specific tokens */
+  --card-shadow:        0 4px 24px rgba(99, 102, 241, 0.10);
+  --card-shadow-hover:  0 8px 32px rgba(99, 102, 241, 0.18);
+  --progress-track:     #E2E8F0;
+  --streak-inactive:    #E2E8F0;
+  --streak-active:      #0099aa;
+  --input-bg:           #F8FAFF;
+  --input-border:       rgba(99, 102, 241, 0.25);
+}
+
+/* ============================================================
+   BASE RESET & TYPOGRAPHY
+   ============================================================ */
+html { scroll-behavior: smooth; }
+
+html, body {
+  margin: 0; padding: 0; min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background-color: var(--surface);
+  color: var(--on-surface);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root { height: 100vh; display: flex; flex-direction: column; }
+
+/* ============================================================
+   TOP-NAV LAYOUT (Main App Shell)
+   ============================================================ */
+
+/* --- Sticky Top Navigation Bar --- */
+.top-nav {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  background: var(--header-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  z-index: 100;
+  transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+/* --- Mobile Drawer Menu --- */
+.mobile-drawer {
+  position: fixed;
+  top: 64px;
+  left: 0; right: 0;
+  background: var(--surface-container-lowest);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border-color);
+  z-index: 99;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+}
+
+/* ============================================================
+   GLASS CARDS — Tonal Layering (No borders by default)
+   ============================================================ */
+.glass-card {
+  background: var(--surface-container) !important;
+  border-radius: var(--radius-card) !important;
+  border: none !important;
+  transition:
+    background 0.25s ease,
+    box-shadow 0.25s ease !important;
+}
+
+.glass-card:hover {
+  background: var(--surface-container-high) !important;
+}
+
+/* Ghost border fallback — for cases requiring accessibility boundary */
+.ghost-border {
+  outline: 1px solid rgba(59, 73, 74, 0.15);
+}
+
+/* High-lift card variant */
+.lift-card {
+  background: var(--surface-container-highest) !important;
+  border-radius: var(--radius-card) !important;
+  border: none !important;
+}
+
+/* ============================================================
+   GRADIENT BUTTON (Primary CTA)
+   ============================================================ */
+.gradient-btn,
+.gradient-btn.ant-btn {
+  background: linear-gradient(135deg, var(--primary-container), var(--primary)) !important;
+  border: none !important;
+  color: var(--on-primary-fixed) !important;
+  border-radius: var(--radius-btn) !important;
+  font-weight: 700 !important;
+  transition: opacity 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.gradient-btn:hover,
+.gradient-btn.ant-btn:hover {
+  opacity: 0.9 !important;
+  box-shadow: 0 0 20px rgba(73, 238, 248, 0.4) !important;
+}
+
+/* ============================================================
+   TEXT GRADIENT UTILITY
+   ============================================================ */
+.text-gradient {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ============================================================
+   AUTHENTICATION LAYOUT
+   ============================================================ */
+.auth-split-layout {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-hero-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #0d0d2e 0%, #1a0940 30%, #0a1a3e 70%, #050d1f 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 60px 56px;
+  position: relative;
+  overflow: hidden;
+  min-height: 100vh;
+}
+
+.auth-form-panel {
+  width: 560px;
+  min-width: 480px;
+  background: var(--surface-container-lowest);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 56px;
+  min-height: 100vh;
+}
+
+.auth-input .ant-input,
+.auth-input .ant-input-password {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  color: white !important;
+  border-radius: var(--radius-input) !important;
+  transition: all 0.3s ease;
+  height: 48px;
+}
+
+.auth-input .ant-input-affix-wrapper {
+  background: rgba(255,255,255,0.05) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+  border-radius: var(--radius-input) !important;
+  height: 48px;
+  padding: 0 14px;
+}
+
+.auth-input .ant-input:focus,
+.auth-input .ant-input-affix-wrapper:focus,
+.auth-input .ant-input-affix-wrapper-focused {
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 2px rgba(73, 238, 248, 0.2) !important;
+}
+
+.auth-input input::placeholder,
+.auth-input .ant-input::placeholder {
+  color: rgba(255,255,255,0.3) !important;
+}
+
+.auth-input .ant-input-prefix svg,
+.auth-input .ant-input-suffix svg {
+  color: #64748b;
+}
+
+.auth-feature-pill {
+  background: rgba(73, 238, 248, 0.07);
+  border: 1px solid rgba(73, 238, 248, 0.2);
+  border-radius: var(--radius-btn);
+  padding: 4px 14px;
+  color: var(--primary);
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   DASHBOARD GRID (4 quadrants)
+   ============================================================ */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  gap: 20px;
+}
+
+@media (max-width: 900px) {
+  .dashboard-grid { grid-template-columns: 1fr; }
+}
+
+.dashboard-stats-row {
+  display: flex;
+  gap: 16px;
+  text-align: center;
+}
+
+/* ============================================================
+   PRACTICE ROOM — 3-panel split
+   ============================================================ */
+.practice-room-layout {
+  display: grid;
+  grid-template-columns: 280px 1fr 380px;
+  gap: 0;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+}
+
+.practice-panel {
+  background: var(--surface-container-low);
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.practice-panel-center {
+  background: var(--surface-container);
+  overflow-y: auto;
+  padding: 28px;
+  border-left: none; /* tonal shift handles separation */
+}
+
+.practice-panel-right {
+  background: var(--surface-container-lowest);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (max-width: 1100px) {
+  .practice-room-layout { grid-template-columns: 1fr; height: auto; }
+  .practice-panel-right { min-height: 400px; }
+}
+
+/* Problem list item */
+.problem-list-item {
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  margin-bottom: 4px;
+}
+.problem-list-item:hover { background: var(--surface-container-high); }
+.problem-list-item.selected { background: var(--surface-container-high); outline: 1px solid rgba(73,238,248,0.25); }
+
+/* Difficulty badge */
+.diff-easy   { color: var(--primary); }
+.diff-medium { color: var(--secondary); }
+.diff-hard   { color: #ff6b6b; }
+
+/* Topic chip filters */
+.topic-chip {
+  padding: 4px 12px;
+  border-radius: var(--radius-btn);
+  border: 1px solid rgba(59,73,74,0.4);
+  background: var(--surface-container);
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+.topic-chip:hover { background: var(--surface-container-high); color: var(--on-surface); }
+.topic-chip.active {
+  background: rgba(73,238,248,0.12);
+  border-color: rgba(73,238,248,0.4);
+  color: var(--primary);
+}
+
+/* Difficulty range track */
+.diff-slider-track { height: 4px; border-radius: 2px; background: var(--surface-container-high); }
+.diff-slider-fill  { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--primary-container), var(--primary)); }
+
+/* ============================================================
+   CHAT BUBBLES (AI Tutor)
+   ============================================================ */
+.chat-message {
+  padding: 12px 16px;
+  margin: 6px 0;
+  border-radius: 16px;
+  max-width: 85%;
+  word-wrap: break-word;
+  line-height: 1.55;
+  font-size: 14px;
+}
+.chat-user {
+  background: linear-gradient(135deg, var(--secondary-container), rgba(73,238,248,0.3));
+  color: white;
+  margin-left: auto;
+  border-bottom-right-radius: 4px;
+}
+.chat-ai {
+  background: var(--surface-container-high);
+  color: var(--on-surface);
+  margin-right: auto;
+  border-bottom-left-radius: 4px;
+}
+
+/* ============================================================
+   LEADERBOARD COMPONENTS
+   ============================================================ */
+.lb-rank-badge {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   AI PULSE (generating state)
+   ============================================================ */
+.ai-pulse-dot {
+  position: absolute;
+  border-radius: 50%;
+  background: var(--secondary);
+  filter: blur(50px);
+  animation: ai-breathe 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes ai-breathe {
+  0%, 100% { opacity: 0.1; transform: scale(1); }
+  50%       { opacity: 0.3; transform: scale(1.15); }
+}
+
+/* ============================================================
+   CHATBOT FLOAT BUTTON
+   ============================================================ */
+.chatbot-pulse { animation: chatbot-glow 2.5s infinite; }
+
+@keyframes chatbot-glow {
+  0%   { box-shadow: 0 0 0 0 rgba(73, 238, 248, 0.3); }
+  70%  { box-shadow: 0 0 0 15px rgba(73, 238, 248, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(73, 238, 248, 0); }
+}
+
+/* ============================================================
+   ANT DESIGN OVERRIDES (dark mode tokens)
+   ============================================================ */
+.ant-layout-sider {
+  background: var(--surface-container-lowest) !important;
+  border-right: none !important;
+  transition: background 0.3s ease;
+}
+
+.ant-menu {
+  background: transparent !important;
+  border: none !important;
+}
+
+.ant-menu-item-selected {
+  background: var(--surface-container-high) !important;
+  color: var(--primary) !important;
+}
+
+.ant-menu-item:hover {
+  background: var(--surface-container) !important;
+  color: var(--on-surface) !important;
+}
+
+.ant-layout-header {
+  background: var(--surface-container-lowest) !important;
+  border-bottom: none !important;
+  transition: background 0.3s ease;
+}
+
+.ant-layout-content,
+.ant-layout {
+  background: transparent !important;
+}
+
+/* Glass Drawer */
+.glass-drawer .ant-drawer-content {
+  background: var(--surface-container-low) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+.glass-drawer .ant-drawer-header {
+  background: transparent !important;
+  border-bottom: 1px solid rgba(59,73,74,0.2) !important;
+}
+
+/* Glass Modal */
+.glass-modal .ant-modal-content {
+  background: var(--surface-container-low) !important;
+  backdrop-filter: blur(24px) !important;
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+}
+.glass-modal .ant-modal-header {
+  background: transparent !important;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(59,73,74,0.2);
+}
+.glass-modal .ant-modal-title { color: var(--on-surface) !important; }
+.glass-modal .ant-modal-close { color: var(--on-surface-variant) !important; top: 18px; }
+
+/* Ant Cards in dark */
+.ant-card { background: var(--surface-container) !important; border: none !important; }
+.ant-card-head {
+  border-bottom: none !important;
+  background: transparent !important;
+  color: var(--on-surface) !important;
+}
+.ant-card-body { color: var(--on-surface) !important; }
+
+/* Ant Table */
+.ant-table { background: transparent !important; }
+.ant-table-thead > tr > th {
+  background: var(--surface-container-low) !important;
+  color: var(--on-surface-variant) !important;
+  border-bottom: none !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 13px;
+}
+.ant-table-tbody > tr > td {
+  border-bottom: 1px solid rgba(59,73,74,0.15) !important;
+  background: transparent !important;
+  transition: background 0.15s;
+  color: var(--on-surface);
+}
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background: var(--surface-container-high) !important;
+}
+.ant-pagination-item {
+  background: transparent;
+  border-color: rgba(59,73,74,0.4);
+}
+.ant-pagination-item-active {
+  border-color: var(--primary);
+  background: rgba(73,238,248,0.1);
+}
+.ant-pagination-item a { color: var(--on-surface); }
+
+/* Ant Progress */
+.ant-progress-text { color: var(--on-surface) !important; }
+
+/* Ant Select dropdowns */
+.dark-select-popup .ant-select-item-option-content { color: var(--on-surface) !important; }
+.dark-select-popup { background: var(--surface-container-low) !important; border: 1px solid rgba(59,73,74,0.3) !important; }
+
+/* Ant Input */
+.ant-input, .ant-input-affix-wrapper {
+  background: var(--surface-container-low) !important;
+  border-color: rgba(59,73,74,0.4) !important;
+  color: var(--on-surface) !important;
+  border-radius: var(--radius-input) !important;
+}
+.ant-input:focus, .ant-input-affix-wrapper-focused {
+  border-color: rgba(73,238,248,0.5) !important;
+  box-shadow: 0 0 0 2px rgba(73,238,248,0.15) !important;
+}
+.ant-input::placeholder { color: var(--on-surface-muted) !important; }
+
+/* Ant Tag */
+.ant-tag { border-radius: 999px !important; }
+
+/* Ant Dropdown */
+.ant-dropdown-menu {
+  background: var(--surface-container-high) !important;
+  border: 1px solid rgba(59,73,74,0.3) !important;
+  border-radius: 12px !important;
+}
+.ant-dropdown-menu-item { color: var(--on-surface) !important; }
+.ant-dropdown-menu-item:hover { background: var(--surface-container-highest) !important; }
+
+/* ============================================================
+   ROUTE TRANSITION WRAPPER
+   ============================================================ */
+.page-transition-wrapper { width: 100%; }
+
+/* ============================================================
+   MOBILE RESPONSIVE LAYOUT
+   ============================================================ */
+.desktop-only { display: flex; }
+.mobile-only  { display: none; }
+
+@media (max-width: 900px) {
+  .top-nav { padding: 0 16px; }
+
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
+
+  .auth-split-layout { flex-direction: column; }
+  .auth-hero-panel {
+    min-height: 40vh;
+    justify-content: center;
+    padding: 40px 24px;
+  }
+  .auth-form-panel {
+    width: 100%;
+    min-width: unset;
+    padding: 32px 24px;
+    min-height: 60vh;
+  }
+
+  /* Practice room stacks on mobile */
+  .practice-room-layout { grid-template-columns: 1fr; height: auto; }
+  .practice-panel-right { min-height: 400px; }
+
+  /* Mobile spacing utilities */
+  .mobile-stack { flex-direction: column !important; align-items: stretch !important; gap: 16px !important; }
+  .mobile-w-full { width: 100% !important; }
+
+  /* iOS zoom prevention */
+  input, textarea, select, .ant-input, .ant-input-password { font-size: 16px !important; }
+}
+
+@media (min-width: 901px) {
+  .mobile-only { display: none !important; }
+}
+
+/* ============================================================
+   LANDING PAGE
+   ============================================================ */
+.hero-title { font-size: clamp(3rem, 6vw, 5rem); }
+.hero-subtitle { font-size: clamp(1rem, 2vw, 1.3rem); }
+.bento-card-hover {
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), background 0.25s ease;
+}
+.bento-card-hover:hover { transform: translateY(-4px); }
+
+/* ============================================================
+   MOBILE OVERLAY (tapping outside closes drawer)
+   ============================================================ */
+.mobile-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 98;
+  backdrop-filter: blur(2px);
+}
+
+/* ============================================================
+   HOVER UTILITIES
+   ============================================================ */
+.hover-cyan:hover { color: var(--primary) !important; }
+
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-container-low); }
+::-webkit-scrollbar-thumb { background: var(--surface-container-highest); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--outline-variant); }
+
+/* ============================================================
+   PULSE SKELETON ANIMATION
+   ============================================================ */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ============================================================
+   PRACTICE ROOM — MOBILE SHOW CLASS
+   ============================================================ */
+.practice-panel.mobile-show {
+  display: block !important;
+}
+
+/* ============================================================
+   MOBILE BREAKPOINT — ≤768px (iPhone 14 / SE)
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* ── Navigation ── */
+  .top-nav { padding: 0 14px; height: 56px; }
+  .mobile-drawer { top: 56px; }
+
+  /* ── Practice Room — Stack vertically ── */
+  .practice-room-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  .practice-panel {
+    width: 100% !important;
+    display: none; /* hidden by default on mobile; toggled via .mobile-show */
+    overflow-y: visible !important;
+    padding: 16px !important;
+    max-height: 80vh;
+    overflow-y: auto !important;
+    position: fixed;
+    top: 56px;
+    left: 0; right: 0;
+    z-index: 200;
+    background: var(--surface-container-lowest) !important;
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+  }
+
+  .practice-panel-center {
+    width: 100% !important;
+    padding: 16px !important;
+    min-height: auto !important;
+  }
+
+  .practice-panel-right {
+    width: 100% !important;
+    min-height: 420px !important;
+    flex-shrink: 0;
+  }
+
+  /* ── Analytics cards — single column ── */
+  .analytics-stat-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+
+  /* ── Dashboard grid — single col ── */
+  .dashboard-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* ── Auth layout ── */
+  .auth-split-layout { flex-direction: column; }
+  .auth-hero-panel { min-height: 200px; padding: 28px 20px; }
+  .auth-form-panel { width: 100%; min-width: unset; padding: 28px 20px; min-height: auto; }
+
+  /* ── Touch targets — minimum 44px ── */
+  button, .ant-btn, [role="button"],
+  .topic-chip, .top-nav-item, .problem-list-item {
+    min-height: 44px;
+  }
+  .topic-chip { min-height: 32px !important; padding: 6px 12px !important; }
+  .problem-list-item { min-height: 52px !important; padding: 12px !important; }
+
+  /* ── Desktop-only / Mobile-only toggles ── */
+  .desktop-only { display: none !important; }
+  .mobile-only  { display: flex !important; }
+
+  /* ── iOS text zoom prevention ── */
+  input, textarea, select,
+  .ant-input, .ant-input-password,
+  .ant-select-selector { font-size: 16px !important; }
+
+  /* ── General overflow prevention ── */
+  body { overflow-x: hidden; }
+  * { box-sizing: border-box; }
+
+  /* ── Landing hero stacks vertically ── */
+  .hero-cta-row { flex-direction: column !important; align-items: center !important; }
+
+  /* ── Learning Videos — single col grid ── */
+  .videos-grid { grid-template-columns: 1fr !important; }
+
+  /* ── Chat bubbles — wider on tiny screens ── */
+  .chat-message { max-width: 95% !important; font-size: 13px !important; }
+
+  /* ── Heatmap — scrollable ── */
+  .heatmap-container { overflow-x: auto !important; }
+
+  /* ── Tables — horizontal scroll ── */
+  table { display: block; width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ============================================================
+   TABLET BREAKPOINT — 769px–1024px (iPad)
+   ============================================================ */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .practice-room-layout {
+    grid-template-columns: 240px 1fr !important;
+    grid-template-rows: 1fr 400px !important;
+  }
+  .practice-panel-right {
+    grid-column: 1 / -1 !important;
+    min-height: 400px !important;
+  }
+  .analytics-stat-grid {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ============================================================
+   EXTRA SMALL — ≤380px (iPhone SE)
+   ============================================================ */
+@media (max-width: 380px) {
+  .analytics-stat-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .top-nav .ant-typography { font-size: 15px !important; }
+}
+
+/* ============================================================
+   MARQUEE ANIMATION (Landing page)
+   ============================================================ */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee 28s linear infinite;
+}
+.marquee-track:hover { animation-play-state: paused; }
+
+/* ============================================================
+   COUNT-UP ANIMATION UTILITY
+   ============================================================ */
+@keyframes countUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.count-up { animation: countUp 0.6s ease forwards; }
+
+/* ============================================================
+   GLOBAL UI POLISH — Button, Card & Nav Enhancements
+   ============================================================ */
+
+/* ── Page fade-in animation ── */
+@keyframes pageFadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Button hover effects ── */
+
+/* Primary teal buttons — brighten + glow */
+.ant-btn-primary:hover,
+button[style*="background: #00D8D6"]:hover,
+button[style*="background: var(--primary)"]:hover {
+  filter: brightness(1.1) !important;
+  box-shadow: 0 0 16px rgba(0, 216, 214, 0.4) !important;
+}
+
+/* Ghost / text buttons — subtle fill */
+.ant-btn-text:hover,
+.ant-btn-default:hover {
+  background: rgba(0, 216, 214, 0.06) !important;
+}
+
+/* All interactive elements — smooth transition baseline */
+button, a, .ant-btn, .ant-select, .ant-input,
+[role="button"], [tabindex] {
+  transition: all 0.15s ease;
+}
+
+/* Icon buttons (lucide wrappers) — scale on hover */
+.ant-btn-icon-only:hover,
+button:has(svg:only-child):hover {
+  transform: scale(1.1);
+}
+
+/* ── Card & Panel hover effects ── */
+.ant-card,
+[style*="borderRadius: 24px"],
+[style*="border-radius: 24px"],
+.glass-card {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* ── Nav polish ── */
+
+/* Active nav indicator — subtle slide-in underline */
+@keyframes navUnderlineSlide {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+
+.top-nav-link.active::after,
+.nav-item.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0; right: 0;
+  height: 2px;
+  background: var(--primary);
+  border-radius: 2px;
+  transform-origin: left;
+  animation: navUnderlineSlide 0.3s ease forwards;
+}
+
+/* Nav items text color on hover */
+.top-nav a:hover,
+.nav-link:hover {
+  color: var(--primary) !important;
+}
+
+/* ── Skeleton shimmer animation ── */
+@keyframes skeletonShimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton-box {
+  background: linear-gradient(90deg, var(--surface-container-low) 25%, var(--surface-container-high) 50%, var(--surface-container-low) 75%);
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s ease-in-out infinite;
+  border-radius: var(--radius-card);
+}
+
+/* ============================================================
+   LANDING PAGE — CURSOR GLOW EFFECT
+   ============================================================ */
+.cursor-glow-container {
+  position: relative;
+  overflow: hidden;
+}
+.cursor-glow {
+  position: fixed;
+  width: 600px;
+  height: 600px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(73,238,248,0.06) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+  transition: opacity 0.3s ease;
+}
+
+/* ============================================================
+   LANDING PAGE — 3D TILT CARDS
+   ============================================================ */
+.tilt-card {
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+.tilt-card-inner {
+  transition: transform 0.15s ease-out;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* ============================================================
+   LANDING PAGE — ANIMATED GRADIENT BORDER
+   ============================================================ */
+@keyframes borderRotate {
+  0%   { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
+}
+.gradient-border-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+}
+.gradient-border-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 20px;
+  padding: 1px;
+  background: conic-gradient(from var(--border-angle, 0deg), transparent 25%, rgba(73,238,248,0.4) 50%, transparent 75%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  animation: borderRotate 4s linear infinite;
+  pointer-events: none;
+}
+
+/* ============================================================
+   LANDING PAGE — TESTIMONIAL CAROUSEL
+   ============================================================ */
+.testimonial-carousel-track {
+  display: flex;
+  gap: 20px;
+  animation: testimonialScroll 30s linear infinite;
+  width: max-content;
+}
+.testimonial-carousel-track:hover {
+  animation-play-state: paused;
+}
+@keyframes testimonialScroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.testimonial-carousel-wrapper {
+  overflow: hidden;
+  position: relative;
+}
+.testimonial-carousel-wrapper::before,
+.testimonial-carousel-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 80px;
+  z-index: 2;
+  pointer-events: none;
+}
+.testimonial-carousel-wrapper::before {
+  left: 0;
+  background: linear-gradient(to right, #05080f, transparent);
+}
+.testimonial-carousel-wrapper::after {
+  right: 0;
+  background: linear-gradient(to left, #05080f, transparent);
+}
+
+/* ============================================================
+   LANDING PAGE — HOW IT WORKS STEP CONNECTOR
+   ============================================================ */
+.hiw-step-line {
+  position: absolute;
+  top: 28px;
+  left: 28px;
+  right: -50%;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(73,238,248,0.4), transparent);
+  z-index: 0;
+}
+
+/* ============================================================
+   LANDING PAGE — TYPING CURSOR BLINK
+   ============================================================ */
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0; }
+}
+.typing-cursor {
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: #49eef8;
+  margin-left: 2px;
+  animation: blink 0.8s step-end infinite;
+  vertical-align: text-bottom;
+}
+
+/* ============================================================
+   LANDING PAGE — NAVBAR SCROLL LINKS
+   ============================================================ */
+.landing-nav-link {
+  color: #7a8a8b;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 6px 14px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+  user-select: none;
+}
+.landing-nav-link:hover {
+  color: #e2e2e2;
+  background: rgba(73,238,248,0.06);
+}
+.landing-nav-link.active {
+  color: #49eef8;
+}
+
+/* ============================================================
+   PRACTICE ROOM — PROGRESS & GAMIFICATION
+   ============================================================ */
+.xp-bar {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--surface-container-highest);
+  overflow: hidden;
+}
+.xp-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #4ade80, #49eef8);
+  transition: width 0.6s ease;
+}
+
+.badge-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+.badge-icon:hover {
+  transform: scale(1.2);
+}
+
+.diff-filter-btn {
+  padding: 5px 14px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: var(--on-surface-variant);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.diff-filter-btn:hover {
+  background: rgba(255,255,255,0.06);
+}
+.diff-filter-btn.active-easy {
+  background: rgba(74,222,128,0.12);
+  border-color: rgba(74,222,128,0.4);
+  color: #4ade80;
+}
+.diff-filter-btn.active-medium {
+  background: rgba(250,173,20,0.12);
+  border-color: rgba(250,173,20,0.4);
+  color: #faad14;
+}
+.diff-filter-btn.active-hard {
+  background: rgba(255,107,107,0.12);
+  border-color: rgba(255,107,107,0.4);
+  color: #ff6b6b;
+}
+.diff-filter-btn.active-all {
+  background: rgba(73,238,248,0.12);
+  border-color: rgba(73,238,248,0.4);
+  color: #49eef8;
+}
+
+/* Practice Room notes */
+.problem-notes-area {
+  width: 100%;
+  min-height: 80px;
+  background: var(--surface-container-low);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 10px 12px;
+  color: var(--on-surface);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  resize: vertical;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+.problem-notes-area:focus {
+  border-color: rgba(73,238,248,0.4);
+}
+.problem-notes-area::placeholder {
+  color: var(--on-surface-muted);
+}
+
+/* Timer */
+.practice-timer {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ============================================================
+   LANDING PAGE — MARQUEE FADE EDGES (enhanced)
+   ============================================================ */
+.marquee-wrapper {
+  position: relative;
+  overflow: hidden;
+}
+.marquee-wrapper::before,
+.marquee-wrapper::after {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; width: 60px; z-index: 2;
+  pointer-events: none;
+}
+.marquee-wrapper::before { left: 0; background: linear-gradient(to right, #05080f, transparent); }
+.marquee-wrapper::after  { right: 0; background: linear-gradient(to left, #05080f, transparent); }
+
+/* ─── Typing Dots Animation (Chatbot) ─── */
+.typing-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--primary, #49eef8);
+  opacity: 0.4;
+  animation: typingBounce 1.4s infinite ease-in-out;
+  animation-delay: calc(var(--i) * 0.2s);
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+  40% { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Skeleton Loader ─── */
+.skeleton-loader {
+  background: linear-gradient(
+    90deg,
+    var(--surface-container, rgba(255,255,255,0.03)) 25%,
+    var(--surface-container-high, rgba(255,255,255,0.06)) 50%,
+    var(--surface-container, rgba(255,255,255,0.03)) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 1.5s infinite;
+  border-radius: 12px;
+}
+
+@keyframes skeletonShimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
