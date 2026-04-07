@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Modal, Select, Button, Typography, Spin, Row, Col, Tag } from 'antd';
 import Editor from '@monaco-editor/react';
 import { PlayCircle, Terminal, Cpu, Bug } from 'lucide-react';
-import { supabase } from '../lib/supabaseClient';
 import { sendChatMessage } from '../lib/chatApi';
+import { useCodeExecution } from '../hooks/useCodeExecution';
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -28,8 +28,7 @@ const CodeEditor = ({ visible, onClose, questionName }) => {
 
   const [language, setLanguage] = useState('javascript');
   const [code, setCode] = useState(defaultCode.javascript);
-  const [output, setOutput] = useState('');
-  const [isRunning, setIsRunning] = useState(false);
+  const { runCode, isRunning, output, error, executionTime, clearOutput } = useCodeExecution();
   
   // AI Mentor State
   const [isDebugging, setIsDebugging] = useState(false);
@@ -39,40 +38,14 @@ const CodeEditor = ({ visible, onClose, questionName }) => {
   const handleLanguageChange = (val) => {
     setLanguage(val);
     setCode(defaultCode[val]);
-    setOutput('');
+    clearOutput();
     setDebugExplanation('');
     setFixedCode('');
   };
 
-  const xaiChat = (systemContent, userContent) =>
-    sendChatMessage({ message: userContent, context: systemContent });
-
   const handleRunCode = async () => {
-    setIsRunning(true);
-    setOutput('Compiling and executing via AI Cloud Sandbox...');
-    try {
-      // Hackathon Pivot: Since physical free APIs like Piston die mid-production,
-      // we leverage our blazing fast Grok AI Edge network to perform a highly accurate runtime simulation.
-      const compilerPrompt = `Act strictly as a headless compiler and execution engine for ${language}.
-The user ran the following code:
-
-\n${code}\n
-
-Execute this code in your mind. Return ONLY the standard console output (stdout).
-If the code contains ANY syntax errors (like missing semicolons, unmatched brackets) or runtime errors, return ONLY the raw compiler traceback error. Do NOT implicitly forgive mistakes. Simulate a highly strict compiler environment.
-CRITICAL: Do not include ANY conversational text. Do not use markdown backticks. Output exclusively raw terminal text.`;
-
-      const simulationLog = await xaiChat(
-        'You are a vital component of a physical IDE. Output raw terminal logs only.',
-        compilerPrompt
-      );
-      
-      setOutput(simulationLog.trim() || 'Process exited with code 0.\n(No standard output was returned by the kernel.)');
-    } catch (err) {
-      setOutput(`Kernel Panic: Connection to the Execution Edge failed.\n${err.message}`);
-    } finally {
-      setIsRunning(false);
-    }
+    clearOutput();
+    await runCode(code, language);
   };
 
   const handleDebugCode = async () => {
@@ -175,9 +148,36 @@ Identify the root flaw. Return your response STRICTLY AND EXCLUSIVELY in raw JSO
         </Col>
         <Col xs={24} md={10}>
           <div style={{ padding: 16, height: '100%', background: '#0d1117', display: 'flex', flexDirection: 'column' }}>
-            <Title level={5} style={{ margin: '0 0 12px 0', color: '#8b949e', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>Console Output</Title>
-            <div style={{ flex: 1, overflowY: 'auto', background: '#010409', border: '1px solid #30363d', borderRadius: 12, padding: 20, fontFamily: '"JetBrains Mono", "Fira Code", monospace', color: '#56d364', whiteSpace: 'pre-wrap', fontSize: 15, lineHeight: 1.6, boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)' }}>
-              {output || <span style={{ color: '#484f58' }}>root@aiedu:~# Click "Run Code" to compile...</span>}
+            <Title level={5} style={{ margin: '0 0 12px 0', color: '#8b949e', fontSize: 13, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Console Output{executionTime ? ` · ${executionTime}s` : ''}
+            </Title>
+            <div style={{ flex: 1, overflowY: 'auto', background: '#010409', border: '1px solid #30363d', borderRadius: 12, padding: 20, fontFamily: '"JetBrains Mono", "Fira Code", monospace', color: '#e2e8f0', whiteSpace: 'pre-wrap', fontSize: 15, lineHeight: 1.6, boxShadow: 'inset 0 0 10px rgba(0,0,0,0.5)' }}>
+              {error && (
+                <span style={{ color: '#f97373' }}>
+                  {error}
+                </span>
+              )}
+              {!error && !output && (
+                <span style={{ color: '#484f58' }}>
+                  root@aiedu:~# Click "Run Code" to compile...
+                </span>
+              )}
+              {!error && output && (
+                <>
+                  {output.compile_output && (
+                    <span style={{ color: '#facc15' }}>{output.compile_output.trim()}\n\n</span>
+                  )}
+                  {output.stdout && (
+                    <span style={{ color: '#56d364' }}>{output.stdout.trim()}\n</span>
+                  )}
+                  {output.stderr && (
+                    <span style={{ color: '#f97373' }}>{output.stderr.trim()}</span>
+                  )}
+                  {!output.compile_output && !output.stdout && !output.stderr && (
+                    <span style={{ color: '#64748b' }}>(no output)</span>
+                  )}
+                </>
+              )}
             </div>
 
             {/* AI Mentor Analysis Panel */}

@@ -11,7 +11,7 @@ import { PROBLEMS, TOPICS, LANGUAGES, STARTER_TEMPLATES, DIFF_COLORS, DIFF_BG } 
 
 const { Option } = Select;
 
-/* ── Piston API code execution ── */
+/* ── Piston / backend execution helper (original behavior) ── */
 const runCode = async (code, language) => {
   const lang = LANGUAGES[language];
   // Try Piston API first
@@ -52,6 +52,7 @@ const runCode = async (code, language) => {
 };
 
 /* ── Test Case Result ── */
+
 const TestResult = ({ example, index, result }) => {
   const passed = result && result.stdout?.trim() === example.output.trim();
   return (
