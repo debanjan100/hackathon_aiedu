@@ -3,7 +3,7 @@ import { Layout, Input, Button, Drawer, Avatar, Dropdown, message, Typography } 
 import {
   LayoutDashboard, User, BarChart2, Send, Sparkles, LogOut,
   Calendar, Play, Pause, RefreshCw, Moon, Sun, Compass, Code,
-  Trophy, Menu as MenuIcon, X, Search, BookOpen, Video,
+  Trophy, Menu as MenuIcon, X, Search, BookOpen, Video, FileText,
 } from 'lucide-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
@@ -20,6 +20,7 @@ const NAV_ITEMS = [
   { key: '/dashboard',             icon: <LayoutDashboard size={16} />, label: 'Overview'        },
   { key: '/dashboard/planner',     icon: <Calendar size={16} />,        label: 'Study Planner'   },
   { key: '/dashboard/practice',    icon: <Code size={16} />,            label: 'Practice Room'   },
+  { key: '/dashboard/resume-scanner', icon: <FileText size={16} />,     label: 'Résumé Scanner'  },
   { key: '/dashboard/videos',      icon: <Video size={16} />,           label: 'Learning Videos' },
   { key: '/dashboard/resources',   icon: <BookOpen size={16} />,        label: 'Resources'       },
   { key: '/dashboard/analytics',   icon: <BarChart2 size={16} />,       label: 'Analytics'       },

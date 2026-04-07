@@ -2,8 +2,11 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { askAI } from './src/services/aiService.js';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
+// Support both `.env` and Vite-style `.env.local`
 dotenv.config();
+dotenv.config({ path: '.env.local', override: true });
 console.log("Dotenv parsed. API KEY is:", process.env.GEMINI_API_KEY ? "EXISTS" : "UNDEFINED");
 
 const app = express();
@@ -268,6 +271,56 @@ Respond ONLY in this JSON format:
   } catch (err) {
     console.error('Triage complaint error:', err);
     return res.status(500).json({ error: 'Complaint triage unavailable. Please try again later.' });
+  }
+});
+
+app.post('/api/scan-resume', async (req, res) => {
+  try {
+    const { resumeText, targetCompany } = req.body || {};
+    if (!resumeText || !String(resumeText).trim() || !targetCompany || !String(targetCompany).trim()) {
+      return res.status(400).json({ error: 'Missing resumeText or targetCompany' });
+    }
+    if (!process.env.GEMINI_API_KEY) {
+      return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server' });
+    }
+    console.log('[scan-resume] GEMINI_API_KEY length:', String(process.env.GEMINI_API_KEY).length);
+    console.log('[scan-resume] GEMINI_API_KEY prefix:', String(process.env.GEMINI_API_KEY).slice(0, 6));
+
+    const systemPrompt = `You are a senior technical recruiter at ${targetCompany} who also has deep DSA expertise.
+Analyze the provided résumé and respond ONLY with valid JSON:
+{
+  "readinessScore": 65,
+  "hasTopics": ["Arrays", "Hash Maps", "Binary Search", "OOP"],
+  "missingTopics": ["Dynamic Programming", "Graph Traversal", "Segment Trees", "Trie"],
+  "partialTopics": ["Recursion", "Sorting Algorithms"],
+  "studyPlan": {
+    "week1": [
+      { "topic": "Two Pointers", "estimatedHours": 4, "priority": "high", "description": "Master sliding window and two-pointer patterns" }
+    ],
+    "week2": [],
+    "week3": [],
+    "week4": []
+  },
+  "summary": "Your profile shows strong fundamentals but significant gaps in graph algorithms and DP — the two most tested areas at ${targetCompany}."
+}`;
+
+    const prompt = `Resume:\n${resumeText}\n\nTarget company: ${targetCompany}\n\nReturn ONLY JSON.`;
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+    const model = genAI.getGenerativeModel({ model: 'gemini-flash-lite-latest' });
+    const result = await model.generateContent([
+      { text: `Instructions:\n${systemPrompt}\n\n${prompt}` },
+    ]);
+    const text = result?.response?.text?.() || '';
+    const clean = String(text).replace(/```json|```/g, '').trim();
+
+    try {
+      return res.json(JSON.parse(clean));
+    } catch {
+      return res.status(500).json({ error: 'Failed to parse AI response', raw: clean.slice(0, 2000) });
+    }
+  } catch (err) {
+    console.error('Scan resume error:', err);
+    return res.status(500).json({ error: 'Resume scanning failed', details: err.message });
   }
 });
 

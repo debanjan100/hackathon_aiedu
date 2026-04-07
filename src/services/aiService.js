@@ -1,9 +1,5 @@
 // src/services/aiService.js
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import 'dotenv/config';
-
-// Initialize the Gemini API with the key from environment variables
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
 /**
  * Universal function to get AI responses using Gemini Flash Lite
@@ -21,6 +17,9 @@ export async function askAI(
     if (!process.env.GEMINI_API_KEY) {
       throw new Error("GEMINI_API_KEY is missing in environment variables");
     }
+
+    // Initialize lazily so env can be loaded by the host (e.g. `.env.local`)
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
     // Using gemini-flash-lite-latest to avoid Quota Exceeded errors on 2.0-flash
     const model = genAI.getGenerativeModel({
