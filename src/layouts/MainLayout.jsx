@@ -118,6 +118,7 @@ const MainLayout = () => {
   const userMenu = {
     items: [
       { key: 'profile', label: <span onClick={() => navigate('/dashboard/profile')}><User size={14} style={{ marginRight: 8 }} />Profile</span> },
+      { key: 'complaint', label: <span onClick={() => navigate('/dashboard/raise-complaint')}>🚨 Report Issue</span> },
       { key: 'logout',  label: <span onClick={handleLogout}><LogOut size={14} style={{ marginRight: 8, color: '#ff4d4f' }} /><span style={{ color: '#ff4d4f' }}>Logout</span></span> }
     ]
   };

@@ -24,6 +24,7 @@ const LeaderboardPage = lazy(() => import('./pages/LeaderboardPage'));
 const Assessment = lazy(() => import('./pages/Assessment'));
 const Resources = lazy(() => import('./pages/Resources'));
 const LearningVideos = lazy(() => import('./pages/LearningVideos'));
+const RaiseComplaint = lazy(() => import('./pages/RaiseComplaint'));
 
 /* ── Fallback spinner ── */
 const PageSpinner = () => (
@@ -106,7 +107,11 @@ function AppRoutes() {
           <Route path="leaderboard" element={<PageWrapper><LeaderboardPage /></PageWrapper>} />
           <Route path="resources" element={<PageWrapper><Resources /></PageWrapper>} />
           <Route path="videos" element={<PageWrapper><LearningVideos /></PageWrapper>} />
+          <Route path="raise-complaint" element={<PageWrapper><RaiseComplaint /></PageWrapper>} />
         </Route>
+
+        {/* Convenience alias */}
+        <Route path="/raise-complaint" element={<Navigate to="/dashboard/raise-complaint" replace />} />
 
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
