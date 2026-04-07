@@ -283,11 +283,10 @@ app.post('/api/scan-resume', async (req, res) => {
     if (!process.env.GEMINI_API_KEY) {
       return res.status(500).json({ error: 'GEMINI_API_KEY is not configured on the server' });
     }
-    console.log('[scan-resume] GEMINI_API_KEY length:', String(process.env.GEMINI_API_KEY).length);
-    console.log('[scan-resume] GEMINI_API_KEY prefix:', String(process.env.GEMINI_API_KEY).slice(0, 6));
 
     const systemPrompt = `You are a senior technical recruiter at ${targetCompany} who also has deep DSA expertise.
-Analyze the provided résumé and respond ONLY with valid JSON:
+Analyze the provided résumé and respond ONLY with valid JSON (no markdown fences, no extra text).
+The JSON must follow this exact schema:
 {
   "readinessScore": 65,
   "hasTopics": ["Arrays", "Hash Maps", "Binary Search", "OOP"],
@@ -301,23 +300,51 @@ Analyze the provided résumé and respond ONLY with valid JSON:
     "week3": [],
     "week4": []
   },
-  "summary": "Your profile shows strong fundamentals but significant gaps in graph algorithms and DP — the two most tested areas at ${targetCompany}."
-}`;
+  "summary": "Your profile shows strong fundamentals but significant gaps in graph algorithms and DP."
+}
+Rules:
+- Each week must have 2-4 topics.
+- Output ONLY the JSON object. No markdown code fences. No explanatory text.`;
 
     const prompt = `Resume:\n${resumeText}\n\nTarget company: ${targetCompany}\n\nReturn ONLY JSON.`;
     const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: 'gemini-flash-lite-latest' });
-    const result = await model.generateContent([
-      { text: `Instructions:\n${systemPrompt}\n\n${prompt}` },
-    ]);
-    const text = result?.response?.text?.() || '';
-    const clean = String(text).replace(/```json|```/g, '').trim();
 
-    try {
-      return res.json(JSON.parse(clean));
-    } catch {
-      return res.status(500).json({ error: 'Failed to parse AI response', raw: clean.slice(0, 2000) });
+    // Try models in order of preference
+    const modelNames = [
+      'gemini-2.5-flash-lite',
+      'gemini-2.0-flash-lite',
+      'gemini-2.0-flash',
+      'gemini-1.5-flash',
+    ];
+
+    let lastError = null;
+    for (const modelName of modelNames) {
+      try {
+        console.log(`[scan-resume] Trying model: ${modelName}`);
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const result = await model.generateContent([
+          { text: `Instructions:\n${systemPrompt}\n\n${prompt}` },
+        ]);
+        const text = result?.response?.text?.() || '';
+        let clean = String(text).replace(/```json|```/g, '').trim();
+
+        // Extract JSON object with regex if there's surrounding text
+        const jsonMatch = clean.match(/\{[\s\S]*\}/);
+        if (jsonMatch) clean = jsonMatch[0];
+
+        try {
+          return res.json(JSON.parse(clean));
+        } catch {
+          console.warn(`[scan-resume] Model ${modelName} returned unparseable JSON`);
+          lastError = new Error('Failed to parse AI response');
+        }
+      } catch (modelErr) {
+        console.warn(`[scan-resume] Model ${modelName} failed:`, modelErr.message);
+        lastError = modelErr;
+      }
     }
+
+    return res.status(500).json({ error: 'Resume scanning failed', details: lastError?.message || 'All models failed' });
   } catch (err) {
     console.error('Scan resume error:', err);
     return res.status(500).json({ error: 'Resume scanning failed', details: err.message });

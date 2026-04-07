@@ -1,114 +1,264 @@
 <div align="center">
-  <img src="public/logo.png" alt="CognifyX AI Logo" width="120" />
-  <h1>CognifyX AI</h1>
-  <p><b>The Next-Generation AI-Powered Coding & Skill Validation Platform.</b></p>
-  <br />
+
+<br/>
+
+# 🧠 CognifyX AI
+
+### *The Next-Generation AI-Powered Learning & Skill Validation Platform*
+
+<br/>
+
+[![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev)
+[![Supabase](https://img.shields.io/badge/Supabase-Auth%20%2B%20DB-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Google Gemini](https://img.shields.io/badge/Google-Gemini%20AI-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://deepmind.google/technologies/gemini/)
+[![Vercel](https://img.shields.io/badge/Deployed-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+
+<br/>
+
+> **"Stop Googling. Start Understanding."**  
+> CognifyX AI is your 24/7 AI tutor, code reviewer, career coach, and skill tracker — all in one stunning, gamified platform.
+
+<br/>
+
 </div>
 
 ---
 
-## 🔷 SECTION 1: PROJECT OVERVIEW
+## 🚀 The Problem We're Solving
 
-- **Project Name:** CognifyX AI
-- **Tagline:** Empowering developers through intelligent, personalized learning.
-- **Problem Statement:** Traditional educational platforms offer a one-size-fits-all approach, leaving learners without personalized mentoring, precise skill tracking, or immediate conceptual help when they inevitably get stuck.
-- **Solution Overview:** CognifyX AI is an intelligent, gamified learning dashboard that tracks user mastery across specific DSA topics, provides curated daily problem sets, and features a seamlessly integrated real-time AI tutor to guide users through complex programming concepts.
-- **Target Users:** Computer Science students, aspiring software engineers, hackathon participants, and lifelong technical learners looking to master Data Structures and Algorithms.
+Every CS student and aspiring developer faces the same wall:
 
----
+- 📚 **Isolated learning** — Textbooks and tutorials give no feedback when you're stuck
+- 🎯 **No skill map** — Nobody knows *exactly* what they know vs what they don't
+- 💬 **Zero mentorship access** — Expert feedback is expensive & hard to access
+- 📄 **Resume blindspots** — Students write resumes with no idea how ATS systems see them
+- 🗣️ **Interview anxiety** — No safe space to practice without judgment
 
-## 🔷 SECTION 2: TECH STACK
-
-**Frontend:**
-- **Framework:** React.js / Vite (High-performance SPA)
-- **Styling:** Vanilla CSS (Custom Design System with Light/Dark Mode), Ant Design (Component primitives), Tailwind CSS utility classes
-- **UI Components:** Framer Motion (micro-animations, staggering effects), Lucide React (vector iconography)
-
-**Backend:**
-- **Local Dev:** Express.js Middleware (`server.js`)
-- **API Handling:** Vercel Serverless Functions (`/api/chat.js`)
-- **AI Integration:** **OpenAI GPT-3.5-turbo** — Providing lightning-fast, highly accurate educational mentoring.
-
-**Database:**
-- **Storage & Auth:** Supabase (PostgreSQL)
-  - **Data Flow:** The frontend communicates directly with Supabase via the `@supabase/supabase-js` client using Row Level Security (RLS) policies. Profiles, user progress (XP/streak), leaderboard rankings, and problem sets are stored relationally and updated in real-time.
-
-**Other Tools:**
-- **Deployment:** Vercel (CI/CD pipeline and Edge deployment)
-- **Version Control:** GitHub 
+**CognifyX AI solves all of this in one unified, intelligent platform.**
 
 ---
 
-## 🔷 SECTION 3: SYSTEM ARCHITECTURE
+## ✨ Core Features
 
-### Full Application Flow Step-by-Step:
-**User** → **Frontend (React)** → **Serverless API (Vercel)** → **AI Model (OpenAI)** → **Database (Supabase)** → **Response to User**
+### 🤖 AI Tutor (Gemini-Powered)
+Real-time conversational AI tutor that uses the **Socratic method** — it doesn't just give answers, it guides you to *understand*. Ask anything: "How does QuickSort work?", "Debug my code", "Explain Big-O of this algorithm."
 
-1. **Authentication Flow:** Users sign up/log in using Supabase Auth. A secure session token is stored. The application creates a corresponding `profiles` row in the Supabase PostgreSQL database via a secure trigger.
-2. **Chat System Flow:** When a user asks a doubt in the AI Quick Chat, the React frontend sends a POST request to our custom Vercel Serverless Function (`/api/chat`). The serverless API securely injects the `OPENAI_API_KEY` from environment variables and proxies the request to the OpenAI chat completions endpoint. The GPT-3.5 or GPT-4o model computes the response and sends it back through the serverless function to the user's UI.
-3. **Data Storage Logic:** When a user completes a daily challenge or earns XP, the React frontend dispatches a Supabase RPC or upsert command. Supabase updates the `profiles` table (incrementing XP/Streak) and triggers a refresh on the dynamic Leaderboard component.
+### 🏋️ Practice Room (Monaco Code Editor)
+A full-featured in-browser IDE (powered by Monaco Editor — the same engine as VS Code) with:
+- DSA problem sets across Arrays, Graphs, Trees, Hashing, DP & more
+- AI-assisted code review after submission
+- Real-time syntax highlighting and error detection
 
----
+### 📊 Mastery Analytics & XP Tracker
+Visual SVG ring charts mapping your exact proficiency across every DSA topic. Know precisely where you're strong and where you need work. Every problem solved earns **XP** that feeds into your global leaderboard rank.
 
-## 🔷 SECTION 4: FEATURES
+### 🎯 AI Roadmap Generator
+Generates a fully personalized, step-by-step learning roadmap based on your current skill level, your target role (SWE, ML Engineer, etc.), and timeline. No more generic YouTube playlists.
 
-- **⚡ AI Quick Chat Tutor:** Context-aware chatbot powered by OpenAI GPT-3.5-turbo, capable of solving coding doubts and explaining DSA concepts in real-time.
-- **🔐 Secure Authentication:** Seamless login, signup, and profile management using Supabase Auth.
-- **📈 Mastery & XP Tracker:** Visual data representation mapping a user’s progress across categories (Arrays, Graphs, Hashing) via animated SVG rings.
-- **🎯 Gamified Learning:** Daily Challenges synced to midnight IST, streak tracking heatmaps, and a real-time Top Scholars Leaderboard.
-- **🌗 Stunning Premium UI:** High-fidelity Glassmorphic aesthetics featuring custom micro-animations, animated gradient borders, and dual-theme (Light/Dark) support.
-- **💡 Smart Study Assistant:** Daily rotating study tips and intelligent path recommendations based on previous activity.
+### 📅 AI Study Planner (Drag & Drop)
+Smart study scheduling with a drag-and-drop interface (powered by **@dnd-kit**). The AI distributes topics intelligently across your available days, adapting difficulty curves automatically.
 
----
+### 🎙️ Mock Interview Room (AI Interviewer)
+Simulate real technical interviews with an AI acting as the interviewer. It asks follow-up questions, evaluates your thought process, and gives structured feedback on your answers — helping kill interview anxiety before the real thing.
 
-## 🔷 SECTION 5: DEPLOYMENT WORKFLOW
+### 📄 Resume Scanner & ATS Analyzer
+Upload your resume as a PDF. The AI parses it, scores it against ATS filters, identifies missing keywords, and suggests targeted improvements to maximize your callback rate.
 
-1. **Code Pushed to GitHub:** Developers commit and push changes directly to the `master` branch on GitHub.
-2. **Connected to Vercel:** The Vercel platform is linked to the GitHub repository webhook.
-3. **Auto Deployment Pipeline:** Upon every push, Vercel automatically runs `npm run build`, creates a production-ready optimized bundle, and deploys it to the global edge caching network. 
-4. **Environment Variables:** Secure keys are explicitly stored in Vercel settings and never exposed to the client:
-   - `VITE_SUPABASE_URL` & `VITE_SUPABASE_ANON_KEY` mapping to the Supabase instance.
-   - `OPENAI_API_KEY` mapping securely to OpenAI Dashboard, accessed only by the `/api` serverless backend.
+### 🏆 Live Global Leaderboard
+Real-time competitive ranking powered by **Supabase Realtime**. See where you rank globally, filter by topic, and challenge friends. Daily resets keep competition fresh.
 
----
+### 📹 Curated Learning Videos
+Handpicked, topic-tagged video resources integrated directly into the learning flow — no rabbit holes, just exactly what you need at exactly the right moment.
 
-## 🔷 SECTION 6: HOW IT WORKS (STEP FLOW)
+### 🎓 Certificate Generator (PDF Export)
+Upon completing a learning path or assessment, generate a professional certificate with your name, topic, score, and date — exportable as a high-quality PDF via **jsPDF + html2canvas**.
 
-1. **User Opens Website:** The user lands on the high-conversion landing page and clicks "Get Started".
-2. **User Logs In:** Authentication is handled by Supabase, securely dropping the user into their personalized dashboard.
-3. **User Action (Practice/Doubt):** The user clicks to solve the "Daily Challenge" or types a question into the AI Sidebar ("How does a Hash Map handle collisions?").
-4. **API Processes Request:** The frontend queries the Serverless backend, formatting the chat history safely.
-5. **AI Generates Response:** OpenAI’s `gpt-3.5-turbo` model processes the prompt and returns an optimized, educational response without giving away the direct code answer immediately.
-6. **Response Displayed & Progress Saved:** The user reads the AI response, solves their code, clicks "Solve", and the platform sends their earned XP straight to the Supabase database. The UI toasts a celebration notification.
+### 📈 Deep Analytics Dashboard
+Recharts-powered visualizations tracking your learning velocity, streak history (GitHub-style heatmap), problem completion rates, and XP growth over time.
 
----
-
-## 🔷 SECTION 7: USE CASES
-
-- **🎓 Students Learning with AI:** Providing 24/7 on-demand tutoring for complex university computer science subjects when professors are unavailable.
-- **💻 Coding Assistant:** Assisting developers dynamically during high-stress environments to debug syntax errors and plan architectures.
-- **Tracks Mastery:** Creating completely tailored roadmaps based on what topics the user is definitively weak in (e.g. tracking "Graphs" score internally).
+### 🌗 Premium Dual-Theme UI
+Stunning glassmorphism design with hand-crafted Light and Dark modes, animated gradient borders, Framer Motion page transitions, and a custom design system — built entirely from scratch.
 
 ---
 
-## 🔷 SECTION 8: BENEFITS
+## 🛠️ Tech Stack
 
-- **⚡ Fast & Scalable:** By utilizing Vercel Functions and Supabase, the application has zero cold starts and can scale to thousands of simultaneous users effortlessly.
-- **🤖 Socratic Learning:** Doesn't just give answers, but acts as a Socratic tutor utilizing the OpenAI model to increase information retention.
-- **🎨 User-Friendly:** Reduced cognitive load through a distraction-free, visually stunning environment that encourages flow state.
-- **💰 Cost-Efficient:** Built completely on a serverless paradigm, costing practically nothing when idle compared to traditional monolithic EC2 instances.
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| **Frontend** | React 19 + Vite 8 | Ultra-fast SPA with code-splitting |
+| **Styling** | Vanilla CSS + Ant Design | Custom design system + component primitives |
+| **Animations** | Framer Motion | Page transitions, micro-animations |
+| **Code Editor** | Monaco Editor | In-browser VS Code experience |
+| **Drag & Drop** | @dnd-kit | Study planner scheduling UI |
+| **Charts** | Recharts | Analytics & progress visualizations |
+| **3D Background** | Three.js | Immersive landing page experience |
+| **AI Engine** | Google Gemini API | Tutor, interviewer, roadmap, resume analysis |
+| **Auth & DB** | Supabase (PostgreSQL) | Authentication, RLS, real-time data |
+| **Backend** | Express.js + Vercel Functions | API proxy, serverless endpoints |
+| **PDF Export** | jsPDF + html2canvas | Certificate generation |
+| **Deployment** | Vercel | CI/CD, edge caching, zero cold starts |
 
 ---
 
-## 🔷 SECTION 9: FUTURE IMPROVEMENTS
+## 🏗️ System Architecture
 
-- **🛠️ Better AI Fine-Tuning:** Injecting context windows so the AI tutor can read the actual code the user currently has open in the Practice Room.
-- **🎙️ Voice Assistant integration:** Utilizing the Web Speech API to allow users to ask programming questions out loud.
-- **📱 Mobile Native App:** Exporting the React logic to React Native for an iOS / Android cross-platform experience.
-- **📊 Advanced Analytics Dashboard:** Providing deeply intensive charts mapping algorithmic understanding over months.
+```
+┌─────────────────────────────────────────────────────────────┐
+│                        USER BROWSER                         │
+│                  React 19 SPA (Vite Build)                  │
+│   Landing → Auth → Dashboard → [All Feature Pages]         │
+└──────────────────────┬──────────────────────────────────────┘
+                       │  HTTPS
+          ┌────────────┴────────────┐
+          │                         │
+   ┌──────▼──────┐         ┌────────▼────────┐
+   │  Supabase   │         │  Vercel Edge    │
+   │  Auth + DB  │         │  Functions      │
+   │  (Postgres) │         │  /api/chat      │
+   │  Realtime   │         └────────┬────────┘
+   │  RLS Guards │                  │
+   └─────────────┘         ┌────────▼────────┐
+                            │  Google Gemini  │
+                            │  AI API         │
+                            └─────────────────┘
+```
+
+**Data flows:**
+1. **Auth** — Supabase handles signup/login. A DB trigger auto-creates a `profiles` row on new user creation.
+2. **AI Chat** — Frontend → Vercel Serverless Function → Gemini API → response proxied back securely (API key never exposed to client).
+3. **Progress** — XP earned → Supabase upsert → Realtime broadcast → Leaderboard live update.
+4. **Resume** — PDF parsed client-side via `pdfjs-dist` → extracted text → Gemini analysis → structured feedback rendered.
 
 ---
 
-## 🔷 SECTION 10: CONCLUSION
+## 📁 Project Structure
 
-**CognifyX AI is not just another dashboard; it is a fundamental shift in how developers acquire and validate skills.** By combining the frictionless speed of modern React serverless architecture with the sheer reasoning power of OpenAI’s GPT API, we have built a platform that democratizes elite-level technical tutoring. The integration of gamified psychological loops—like streaks, live leaderboards, and daily XP milestones—ensures that users don't just briefly visit, but build lasting, compounding habits. CognifyX AI stands as a highly viable, immediately deployable product that bridges the gap between isolation while learning and the necessity of immediate, intelligent feedback.
+```
+hackathon_aiedu/
+├── api/
+│   └── chat.js              # Vercel serverless AI proxy
+├── src/
+│   ├── pages/
+│   │   ├── Landing.jsx        # Hero + feature showcase
+│   │   ├── Dashboard.jsx      # Main hub (XP, streak, daily challenge)
+│   │   ├── PracticeRoom.jsx   # Monaco IDE + problem sets
+│   │   ├── Analytics.jsx      # Progress charts & heatmaps
+│   │   ├── StudyPlanner.jsx   # Drag-and-drop AI scheduler
+│   │   ├── Roadmap.jsx        # Personalized learning path
+│   │   ├── MockInterview.jsx  # AI interview simulator
+│   │   ├── ResumeScanner.jsx  # ATS resume analyzer
+│   │   ├── LeaderboardPage.jsx # Global rankings
+│   │   ├── Certificate.jsx    # PDF certificate export
+│   │   ├── LearningVideos.jsx # Curated video library
+│   │   ├── Resources.jsx      # Study resources hub
+│   │   ├── Profile.jsx        # User profile & settings
+│   │   └── Assessment.jsx     # Skill assessment tests
+│   ├── components/
+│   │   ├── CodeEditor.jsx     # Monaco wrapper
+│   │   ├── AICodeReview.jsx   # AI code feedback panel
+│   │   ├── Leaderboard.jsx    # Real-time rankings widget
+│   │   ├── Background3D.jsx   # Three.js particle background
+│   │   └── TopNav.jsx         # Navigation bar
+│   ├── context/
+│   │   └── AuthContext.jsx    # Global auth state
+│   └── lib/
+│       └── supabase.js        # Supabase client config
+├── server.js                  # Local Express dev server
+└── supabase/                  # Database migrations & schema
+```
+
+---
+
+## ⚡ Getting Started
+
+### Prerequisites
+- Node.js 18+
+- A [Supabase](https://supabase.com) project
+- A [Google Gemini API key](https://aistudio.google.com)
+
+### Setup
+
+```bash
+# 1. Clone the repository
+git clone https://github.com/debanjan100/hackathon_aiedu.git
+cd hackathon_aiedu
+
+# 2. Install dependencies
+npm install
+
+# 3. Configure environment variables
+cp .env.example .env.local
+# Fill in your keys in .env.local
+
+# 4. Run the development server
+npm run dev
+
+# 5. (Optional) Run the Express API proxy locally
+npm run server
+```
+
+### Environment Variables
+
+```env
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+VITE_GEMINI_API_KEY=your_google_gemini_api_key
+VITE_GOOGLE_CLIENT_ID=your_google_oauth_client_id
+```
+
+---
+
+## 🔐 Security
+
+- All AI API keys are stored as **server-side environment variables** — never exposed to the browser
+- Supabase **Row Level Security (RLS)** ensures users can only access their own data
+- Auth sessions use **JWT tokens** managed by Supabase Auth
+- Google OAuth integration for one-click secure sign-in
+
+---
+
+## 🌐 Deployment
+
+CognifyX AI is deployed on **Vercel** with automatic CI/CD:
+
+1. Push to `main` branch on GitHub
+2. Vercel webhook triggers automatic build (`npm run build`)
+3. Optimized bundle deployed to Vercel's global edge network
+4. Serverless functions deployed alongside for AI API proxying
+
+Zero configuration needed for scaling — handles thousands of concurrent users out of the box.
+
+---
+
+## 🔮 Roadmap & Future Features
+
+- [ ] **Voice Tutor** — Web Speech API integration for hands-free learning
+- [ ] **Collaborative Rooms** — Study with friends in real-time shared sessions
+- [ ] **Company-Specific Prep** — FAANG, startup-specific problem sets & interview patterns
+- [ ] **AI Code Execution** — Run and test code directly in the browser (WASM sandbox)
+- [ ] **Mobile App** — React Native port for iOS & Android
+- [ ] **Advanced Fine-Tuning** — Custom model fine-tuned on top competitive programmer solutions
+- [ ] **LeetCode/Codeforces Sync** — Pull in external solve history for unified tracking
+
+---
+
+## 👥 Team
+
+Built with 🔥 at **[Hackathon Name]** — *because every developer deserves a world-class AI mentor.*
+
+---
+
+## 📜 License
+
+MIT License — free to use, modify, and build upon.
+
+---
+
+<div align="center">
+
+**⭐ If CognifyX AI helped you, give it a star!**
+
+*Built with React · Gemini AI · Supabase · Vercel*
+
+</div>

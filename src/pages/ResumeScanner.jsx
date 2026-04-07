@@ -1,8 +1,8 @@
 import React, { useMemo, useRef, useState } from "react";
 import { toast } from "react-hot-toast";
-import dayjs from "dayjs";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const COMPANIES = [
   { id: "Google", emoji: "🔵", label: "Google" },
@@ -25,8 +25,130 @@ function gaugeColor(score) {
 }
 
 function calcDateForWeek(weekNumber) {
-  const base = dayjs();
-  return base.add((weekNumber - 1) * 7, "day").format("YYYY-MM-DD");
+  const now = new Date();
+  const target = new Date(now);
+  target.setDate(now.getDate() + (weekNumber - 1) * 7);
+  return target.toISOString().split("T")[0]; // YYYY-MM-DD
+}
+
+/* ── Build the Gemini prompt ── */
+function buildScanPrompt(resumeText, targetCompany) {
+  const systemPrompt = `You are a senior technical recruiter at ${targetCompany} who also has deep DSA expertise.
+Analyze the provided résumé and respond ONLY with valid JSON (no markdown fences, no extra text).
+The JSON must follow this exact schema:
+{
+  "readinessScore": <number 0-100>,
+  "hasTopics": ["topic1", "topic2"],
+  "missingTopics": ["topic1", "topic2"],
+  "partialTopics": ["topic1", "topic2"],
+  "studyPlan": {
+    "week1": [
+      { "topic": "Topic Name", "estimatedHours": 4, "priority": "high", "description": "What to study" }
+    ],
+    "week2": [{ "topic": "...", "estimatedHours": 3, "priority": "medium", "description": "..." }],
+    "week3": [{ "topic": "...", "estimatedHours": 3, "priority": "medium", "description": "..." }],
+    "week4": [{ "topic": "...", "estimatedHours": 2, "priority": "low", "description": "..." }]
+  },
+  "summary": "One paragraph summary of the analysis."
+}
+
+Rules:
+- Each week must have 2-4 topics.
+- readinessScore must be a number between 0 and 100.
+- hasTopics, missingTopics, partialTopics must each have at least 1 item.
+- Output ONLY the JSON object. No markdown code fences. No explanatory text.`;
+
+  return `${systemPrompt}\n\nResume:\n${resumeText}\n\nTarget company: ${targetCompany}`;
+}
+
+/* ── Parse AI response to JSON ── */
+function parseAIResponse(text) {
+  // Strip markdown code fences if present
+  let clean = text.replace(/```json\s*/gi, "").replace(/```\s*/gi, "").trim();
+
+  // Try to extract JSON object if there's extra text around it
+  const jsonMatch = clean.match(/\{[\s\S]*\}/);
+  if (jsonMatch) {
+    clean = jsonMatch[0];
+  }
+
+  const parsed = JSON.parse(clean);
+
+  // Validate required fields
+  if (typeof parsed.readinessScore !== "number") {
+    parsed.readinessScore = 50;
+  }
+  if (!Array.isArray(parsed.hasTopics)) parsed.hasTopics = [];
+  if (!Array.isArray(parsed.missingTopics)) parsed.missingTopics = [];
+  if (!Array.isArray(parsed.partialTopics)) parsed.partialTopics = [];
+  if (!parsed.studyPlan || typeof parsed.studyPlan !== "object") {
+    parsed.studyPlan = { week1: [], week2: [], week3: [], week4: [] };
+  }
+  if (!parsed.summary) parsed.summary = "Analysis complete.";
+
+  return parsed;
+}
+
+/* ── Call Gemini directly from the browser ── */
+async function callGeminiDirect(resumeText, targetCompany) {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) {
+    throw new Error("VITE_GEMINI_API_KEY is not configured");
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+
+  // Try models in order of preference
+  const modelNames = [
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-1.5-flash",
+  ];
+
+  let lastError = null;
+
+  for (const modelName of modelNames) {
+    try {
+      const model = genAI.getGenerativeModel({ model: modelName });
+      const prompt = buildScanPrompt(resumeText, targetCompany);
+
+      const result = await model.generateContent({
+        contents: [{ role: "user", parts: [{ text: prompt }] }],
+        generationConfig: {
+          maxOutputTokens: 2048,
+          temperature: 0.3,
+        },
+      });
+
+      const response = await result.response;
+      const text = response.text();
+
+      if (!text || text.trim().length === 0) {
+        throw new Error("Empty response from AI");
+      }
+
+      return parseAIResponse(text);
+    } catch (err) {
+      console.warn(`Model ${modelName} failed:`, err.message);
+      lastError = err;
+      // Continue to next model
+    }
+  }
+
+  throw lastError || new Error("All AI models failed");
+}
+
+/* ── Fallback: call the backend server ── */
+async function callBackendAPI(resumeText, targetCompany) {
+  const res = await fetch("/api/scan-resume", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ resumeText, targetCompany }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+  return data;
 }
 
 export default function ResumeScanner() {
@@ -58,43 +180,73 @@ export default function ResumeScanner() {
     return out;
   }, [result]);
 
+  /* ── PDF text extraction ── */
   const extractPdfText = async (arrayBuffer) => {
-    const pdfjsLib = await import("pdfjs-dist/build/pdf");
-    const workerSrc = (await import("pdfjs-dist/build/pdf.worker?url")).default;
-    pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
-    const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const pages = [];
-    for (let i = 1; i <= doc.numPages; i++) {
-      const page = await doc.getPage(i);
-      const content = await page.getTextContent();
-      const strings = content.items.map((it) => it.str);
-      pages.push(strings.join(" "));
+    try {
+      // Dynamic import for pdfjs-dist — works with v4/v5
+      const pdfjsLib = await import("pdfjs-dist");
+
+      // Set up worker — try multiple known paths
+      try {
+        const workerModule = await import("pdfjs-dist/build/pdf.worker.min?url");
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default;
+      } catch {
+        try {
+          const workerModule = await import("pdfjs-dist/build/pdf.worker?url");
+          pdfjsLib.GlobalWorkerOptions.workerSrc = workerModule.default;
+        } catch {
+          // Disable worker as ultimate fallback — still works, just slower
+          pdfjsLib.GlobalWorkerOptions.workerSrc = "";
+        }
+      }
+
+      const doc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      const pages = [];
+      for (let i = 1; i <= doc.numPages; i++) {
+        const page = await doc.getPage(i);
+        const content = await page.getTextContent();
+        const strings = content.items.map((it) => it.str);
+        pages.push(strings.join(" "));
+      }
+      return pages.join("\n\n");
+    } catch (pdfErr) {
+      console.error("PDF extraction error:", pdfErr);
+      throw new Error("Could not extract text from PDF. Please paste the text manually.");
     }
-    return pages.join("\n\n");
   };
 
+  /* ── File upload handler ── */
   const handleFile = async (file) => {
     if (!file) return;
     const name = file.name.toLowerCase();
     try {
       if (name.endsWith(".txt")) {
         const text = await file.text();
+        if (text.trim().length === 0) {
+          toast.error("The text file is empty.");
+          return;
+        }
         setResumeText(text);
-        toast.success("Loaded text file.");
+        toast.success(`Loaded "${file.name}" (${text.length} chars)`);
         return;
       }
       if (name.endsWith(".pdf")) {
-        toast.loading("Extracting PDF text...", { id: "pdf-extract" });
+        toast.loading("Extracting text from PDF...", { id: "pdf-extract" });
         const buf = await file.arrayBuffer();
         const text = await extractPdfText(buf);
         toast.dismiss("pdf-extract");
+        if (text.trim().length < 10) {
+          toast.error("Could not extract enough text from this PDF. It may be image-based. Please paste the text manually.");
+          return;
+        }
         setResumeText(text);
-        toast.success("Extracted text from PDF.");
+        toast.success(`Extracted ${text.length} characters from "${file.name}"`);
         return;
       }
       toast.error("Only .txt or .pdf files are supported.");
     } catch (e) {
-      toast.error("Failed to read file. Try pasting text instead.");
+      toast.dismiss("pdf-extract");
+      toast.error(e.message || "Failed to read file. Try pasting text instead.");
     }
   };
 
@@ -105,20 +257,35 @@ export default function ResumeScanner() {
     await handleFile(f);
   };
 
+  /* ── Main scan function: tries client-side Gemini first, backend fallback second ── */
   const scanResume = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/scan-resume", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ resumeText, targetCompany }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data?.error || `HTTP ${res.status}`);
+      let data;
 
-      // normalize
+      // Strategy 1: Call Gemini directly from browser (no backend needed)
+      try {
+        data = await callGeminiDirect(resumeText, targetCompany);
+      } catch (directErr) {
+        console.warn("Direct Gemini call failed, trying backend:", directErr.message);
+
+        // Strategy 2: Call Express backend
+        try {
+          data = await callBackendAPI(resumeText, targetCompany);
+        } catch (backendErr) {
+          console.error("Backend also failed:", backendErr.message);
+          throw new Error(
+            directErr.message.includes("API_KEY")
+              ? "Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your .env.local file."
+              : `AI scan failed: ${directErr.message}`
+          );
+        }
+      }
+
+      // Normalize score
       const score = clamp(Number(data.readinessScore) || 0, 0, 100);
       setResult({ ...data, readinessScore: score });
+      toast.success("Résumé scan complete!");
     } catch (e) {
       toast.error(`Scan failed: ${e.message || "Unknown error"}`);
     } finally {
@@ -186,7 +353,7 @@ export default function ResumeScanner() {
     }
 
     if (error) toast.error(`Failed to add all: ${error.message}`);
-    else toast.success("✅ 30 tasks added to your Study Planner!");
+    else toast.success("✅ All tasks added to your Study Planner!");
   };
 
   const score = result?.readinessScore ?? 0;
@@ -200,7 +367,7 @@ export default function ResumeScanner() {
           <div className="rs-pill">Résumé DSA Scanner</div>
           <h1 className="rs-title">Scan your résumé for DSA readiness</h1>
           <p className="rs-sub">
-            Paste your résumé or upload a file. We’ll analyze your DSA coverage and generate a 30‑day plan tailored to your target company.
+            Paste your résumé or upload a file. We'll analyze your DSA coverage and generate a 30‑day plan tailored to your target company.
           </p>
         </div>
 
@@ -217,7 +384,7 @@ export default function ResumeScanner() {
                 value={resumeText}
                 onChange={(e) => setResumeText(e.target.value)}
               />
-              <div className="rs-hint">{resumeText.trim().length} characters</div>
+              <div className="rs-hint">{resumeText.trim().length} characters {resumeText.trim().length < 30 && resumeText.trim().length > 0 ? "(need at least 30)" : ""}</div>
             </div>
 
             <div>
@@ -240,7 +407,11 @@ export default function ResumeScanner() {
                   type="file"
                   accept=".txt,.pdf"
                   style={{ display: "none" }}
-                  onChange={(e) => handleFile(e.target.files?.[0])}
+                  onChange={(e) => {
+                    handleFile(e.target.files?.[0]);
+                    // Reset input so re-uploading the same file works
+                    e.target.value = "";
+                  }}
                 />
               </div>
 
@@ -268,7 +439,7 @@ export default function ResumeScanner() {
               disabled={!canScan || loading}
               onClick={scanResume}
             >
-              {loading ? "Scanning..." : "Scan My Résumé"}
+              {loading ? "⏳ Scanning..." : "Scan My Résumé"}
             </button>
           </div>
         </div>
@@ -415,7 +586,7 @@ export default function ResumeScanner() {
         .rs-grid2{display:grid; grid-template-columns:1.2fr 1fr; gap:16px;}
         @media (max-width:900px){.rs-grid2{grid-template-columns:1fr;}}
         .rs-label{font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:8px;}
-        .rs-textarea{width:100%; min-height:220px; resize:vertical; padding:14px 14px; border-radius:14px; background:rgba(2,6,23,0.55); border:1px solid rgba(99,102,241,0.22); color:#e2e8f0; outline:none; font-size:14px; line-height:1.6;}
+        .rs-textarea{width:100%; min-height:220px; resize:vertical; padding:14px 14px; border-radius:14px; background:rgba(2,6,23,0.55); border:1px solid rgba(99,102,241,0.22); color:#e2e8f0; outline:none; font-size:14px; line-height:1.6; font-family:inherit;}
         .rs-textarea:focus{border-color:#6366f1; box-shadow:0 0 0 3px rgba(99,102,241,0.12);}
         .rs-hint{margin-top:6px; font-size:11px; color:#475569;}
         .rs-drop{border:2px dashed rgba(99,102,241,0.25); border-radius:16px; padding:22px; text-align:center; cursor:pointer; background:rgba(2,6,23,0.35); transition:all .15s;}
@@ -425,13 +596,13 @@ export default function ResumeScanner() {
         .rs-dropSub{margin-top:4px; color:#64748b; font-size:12px;}
         .rs-companyRow{display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px;}
         @media (max-width:900px){.rs-companyRow{grid-template-columns:repeat(2, minmax(0,1fr));}}
-        .rs-companyBtn{display:flex; align-items:center; gap:8px; border-radius:14px; padding:10px 10px; background:rgba(30,41,59,0.55); border:1px solid rgba(99,102,241,0.12); cursor:pointer; transition:all .15s;}
+        .rs-companyBtn{display:flex; align-items:center; gap:8px; border-radius:14px; padding:10px 10px; background:rgba(30,41,59,0.55); border:1px solid rgba(99,102,241,0.12); cursor:pointer; transition:all .15s; color:#cbd5e1;}
         .rs-companyBtn:hover{border-color:rgba(99,102,241,0.45); background:rgba(99,102,241,0.08); transform:translateY(-1px);}
         .rs-companyBtn.selected{border-color:#6366f1; background:rgba(99,102,241,0.16); box-shadow:0 0 18px rgba(99,102,241,0.25);}
         .rs-companyEmoji{font-size:18px;}
         .rs-companyName{font-size:12px; font-weight:700; color:#cbd5e1;}
         .rs-actions{display:flex; justify-content:flex-end; margin-top:14px;}
-        .rs-primary{border:none; border-radius:14px; padding:12px 18px; font-weight:900; color:white; cursor:pointer;
+        .rs-primary{border:none; border-radius:14px; padding:12px 18px; font-weight:900; color:white; cursor:pointer; font-size:14px;
           background:linear-gradient(135deg,#6366f1 0%, #8b5cf6 45%, #22c55e 120%); box-shadow:0 10px 28px rgba(99,102,241,0.35); transition:all .15s;}
         .rs-primary:disabled{opacity:.45; cursor:not-allowed; box-shadow:none; transform:none;}
         .rs-primary:not(:disabled):hover{transform:translateY(-1px); box-shadow:0 14px 34px rgba(99,102,241,0.5);}
@@ -477,4 +648,3 @@ export default function ResumeScanner() {
     </div>
   );
 }
-
