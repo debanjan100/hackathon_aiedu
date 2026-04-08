@@ -14,11 +14,18 @@ const AICodeReview = ({ code, language, problemTitle, visible }) => {
     setLoading(true);
     setReview(null);
 
+    const isELI5 = localStorage.getItem('cognifyx_eli5') === 'true';
+
     try {
       const response = await fetch('/api/ai/code-review', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ code, language, problemTitle })
+        body: JSON.stringify({ 
+          code, 
+          language, 
+          problemTitle,
+          isELI5 // Pass flag to API
+        })
       });
       const data = await response.json();
       
@@ -72,6 +79,11 @@ const AICodeReview = ({ code, language, problemTitle, visible }) => {
         {review && expanded && (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} style={{ overflow: 'hidden' }}>
             <div style={{ padding: '16px 20px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+              {localStorage.getItem('cognifyx_eli5') === 'true' && (
+                <div style={{ background: 'rgba(245,158,11,0.1)', padding: '6px 12px', fontSize: 11, color: '#f59e0b', textAlign: 'center', borderRadius: 8, border: '1px solid rgba(245,158,11,0.2)' }}>
+                  ELI5 Mode active 🧸
+                </div>
+              )}
 
               {review.error ? (
                 <div style={{ color: '#ef4444', fontSize: 13 }}>{review.error}</div>

@@ -333,13 +333,19 @@ const PracticeRoom = () => {
           style={{ borderRadius: 9999, fontWeight: 700, height: 34, display: 'flex', alignItems: 'center', gap: 5 }}
           icon={<Lightbulb size={13} />}
           onClick={async () => {
+            const isELI5 = localStorage.getItem('cognifyx_eli5') === 'true';
             setAiMessages(prev => [...prev, { sender: 'user', text: 'Give me a hint without spoiling the answer.' }]);
             setIsTyping(true);
             try {
               const response = await fetch('/api/ai/hint', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ problemTitle: selectedProblem?.title, problemDescription: selectedProblem?.description, userCode: code })
+                body: JSON.stringify({ 
+                  problemTitle: selectedProblem?.title, 
+                  problemDescription: selectedProblem?.description, 
+                  userCode: code,
+                  isELI5
+                })
               });
               const data = await response.json();
               setAiMessages(prev => [...prev, { sender: 'ai', text: data.error || data.hint || 'No hint available.' }]);

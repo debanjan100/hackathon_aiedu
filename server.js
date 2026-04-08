@@ -108,9 +108,26 @@ app.post('/run-code', async (req, res) => {
 
 app.post('/api/ai/hint', async (req, res) => {
   try {
-    const { problemTitle, problemDescription, userCode } = req.body;
+    const { problemTitle, problemDescription, userCode, isELI5 } = req.body;
 
-    const systemPrompt = `You are a coding interview coach. 
+    const eli5Prefix = isELI5 ? `
+CRITICAL INSTRUCTION — ELI5 MODE ACTIVE: 
+You must explain EVERYTHING using: 
+1. Zero technical jargon — replace every term with a real-world analogy 
+2. Short sentences (max 12 words each) 
+3. Real-world comparisons a 10-year-old would understand 
+4. Emoji to make it fun 🎉 
+5. Never say "algorithm", "data structure", "recursion", "traversal", "node", "pointer" — replace each with an analogy 
+
+Examples of ELI5 translations: 
+- "Recursion" → "Like when you look in a mirror that's facing another mirror — it repeats forever until you stop" 
+- "Binary Search" → "Like guessing a number 1-100 where someone says 'higher/lower' — you always guess the middle" 
+- "Stack" → "Like a stack of pancakes — you can only add or remove from the top 🥞" 
+- "HashMap" → "Like a magic locker room where every locker has a label and you can find any locker instantly 🔑" 
+- "Big-O O(n²)" → "Imagine comparing everyone in your class to everyone else for a handshake — if 30 kids, that's 900 handshakes! 🤝" 
+` : '';
+
+    const systemPrompt = eli5Prefix + `You are a coding interview coach. 
 Give helpful hints without revealing the full solution. 
 Guide the student toward the answer step by step.`;
 
@@ -135,9 +152,26 @@ toward the solution without giving it away directly.`;
 
 app.post('/api/ai/code-review', async (req, res) => {
   try {
-    const { code, language, problemTitle } = req.body;
+    const { code, language, problemTitle, isELI5 } = req.body;
 
-    const systemPrompt = `You are an expert code reviewer 
+    const eli5Prefix = isELI5 ? `
+CRITICAL INSTRUCTION — ELI5 MODE ACTIVE: 
+You must explain EVERYTHING using: 
+1. Zero technical jargon — replace every term with a real-world analogy 
+2. Short sentences (max 12 words each) 
+3. Real-world comparisons a 10-year-old would understand 
+4. Emoji to make it fun 🎉 
+5. Never say "algorithm", "data structure", "recursion", "traversal", "node", "pointer" — replace each with an analogy 
+
+Examples of ELI5 translations: 
+- "Recursion" → "Like when you look in a mirror that's facing another mirror — it repeats forever until you stop" 
+- "Binary Search" → "Like guessing a number 1-100 where someone says 'higher/lower' — you always guess the middle" 
+- "Stack" → "Like a stack of pancakes — you can only add or remove from the top 🥞" 
+- "HashMap" → "Like a magic locker room where every locker has a label and you can find any locker instantly 🔑" 
+- "Big-O O(n²)" → "Imagine comparing everyone in your class to everyone else for a handshake — if 30 kids, that's 900 handshakes! 🤝" 
+` : '';
+
+    const systemPrompt = eli5Prefix + `You are an expert code reviewer 
 specializing in algorithms and data structures.`;
 
     const prompt = `Review this ${language} solution for: 

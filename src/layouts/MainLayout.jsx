@@ -35,6 +35,8 @@ const MainLayout = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const [isELI5, setIsELI5] = useState(localStorage.getItem('cognifyx_eli5') === 'true');
+
   const [timer, setTimer] = useState(0);
   const [isTimerActive, setIsTimerActive] = useState(false);
 
@@ -48,6 +50,10 @@ const MainLayout = () => {
   const [messages, setMessages] = useState([
     { sender: 'ai', text: `Hi ${user?.user_metadata?.name?.split(' ')[0] || 'there'}! 👋 I'm your AI Tutor. Ask me anything about DSA, coding, or your study materials!`, time: new Date() }
   ]);
+
+  useEffect(() => {
+    localStorage.setItem('cognifyx_eli5', isELI5);
+  }, [isELI5]);
 
   // Pomodoro XP timer
   useEffect(() => {
@@ -81,9 +87,26 @@ const MainLayout = () => {
         .slice(-10)
         .map(m => ({ role: m.sender === 'ai' ? 'assistant' : 'user', content: m.text }));
 
+      const eli5Prefix = isELI5 ? `
+CRITICAL INSTRUCTION — ELI5 MODE ACTIVE: 
+You must explain EVERYTHING using: 
+1. Zero technical jargon — replace every term with a real-world analogy 
+2. Short sentences (max 12 words each) 
+3. Real-world comparisons a 10-year-old would understand 
+4. Emoji to make it fun 🎉 
+5. Never say "algorithm", "data structure", "recursion", "traversal", "node", "pointer" — replace each with an analogy 
+
+Examples of ELI5 translations: 
+- "Recursion" → "Like when you look in a mirror that's facing another mirror — it repeats forever until you stop" 
+- "Binary Search" → "Like guessing a number 1-100 where someone says 'higher/lower' — you always guess the middle" 
+- "Stack" → "Like a stack of pancakes — you can only add or remove from the top 🥞" 
+- "HashMap" → "Like a magic locker room where every locker has a label and you can find any locker instantly 🔑" 
+- "Big-O O(n²)" → "Imagine comparing everyone in your class to everyone else for a handshake — if 30 kids, that's 900 handshakes! 🤝" 
+` : '';
+
       const reply = await sendChatMessage({
         message: textToSend,
-        context: 'You are CognifyX AI Tutor — an expert DSA and coding mentor. Help students understand Data Structures, Algorithms, and coding concepts clearly. Keep answers concise, use examples, and be encouraging.',
+        context: eli5Prefix + 'You are CognifyX AI Tutor — an expert DSA and coding mentor. Help students understand Data Structures, Algorithms, and coding concepts clearly. Keep answers concise, use examples, and be encouraging.',
         history
       });
 
@@ -329,8 +352,32 @@ const MainLayout = () => {
       <Drawer
         rootClassName="glass-drawer"
         title={
-          <><Sparkles size={16} style={{ marginRight: 8, verticalAlign: 'middle', color: 'var(--primary)' }} />
-          <strong style={{ color: 'var(--primary)' }}>CognifyX</strong><span style={{ color: 'var(--on-surface)' }}> AI Tutor</span></>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+            <div>
+              <Sparkles size={16} style={{ marginRight: 8, verticalAlign: 'middle', color: 'var(--primary)' }} />
+              <strong style={{ color: 'var(--primary)' }}>CognifyX</strong><span style={{ color: 'var(--on-surface)' }}> AI Tutor</span>
+              {isELI5 && <span style={{ marginLeft: 8 }}>🐥</span>}
+            </div>
+            {/* ELI5 Toggle */}
+            <div 
+              onClick={() => setIsELI5(!isELI5)}
+              style={{ 
+                display: 'flex', alignItems: 'center', background: 'var(--surface-container-highest)', 
+                borderRadius: 9999, padding: 2, cursor: 'pointer', position: 'relative', width: 110, height: 28,
+                border: isELI5 ? '1px solid #f59e0b' : '1px solid var(--border-color)',
+                boxShadow: isELI5 ? '0 0 10px rgba(245,158,11,0.2)' : 'none',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <div style={{ 
+                position: 'absolute', left: isELI5 ? 56 : 2, top: 2, bottom: 2, width: 52, 
+                background: isELI5 ? 'linear-gradient(135deg, #f59e0b, #d97706)' : 'var(--surface-container-low)', 
+                borderRadius: 9999, transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)', zIndex: 1
+              }} />
+              <span style={{ flex: 1, textAlign: 'center', fontSize: 10, fontWeight: 700, zIndex: 2, color: !isELI5 ? 'var(--primary)' : 'var(--on-surface-muted)' }}>Normal 🎓</span>
+              <span style={{ flex: 1, textAlign: 'center', fontSize: 10, fontWeight: 700, zIndex: 2, color: isELI5 ? '#fff' : 'var(--on-surface-muted)' }}>ELI5 🧸</span>
+            </div>
+          </div>
         }
         placement="right"
         onClose={() => setChatOpen(false)}
@@ -338,10 +385,16 @@ const MainLayout = () => {
         width={400}
         styles={{ body: { display: 'flex', flexDirection: 'column', padding: 0 } }}
       >
+        {isELI5 && (
+          <div style={{ background: 'rgba(245,158,11,0.1)', padding: '6px 12px', fontSize: 11, color: '#f59e0b', textAlign: 'center', borderBottom: '1px solid rgba(245,158,11,0.2)' }}>
+            ELI5 Mode active — explanations use simple analogies 🧸
+          </div>
+        )}
         <div style={{ flex: 1, padding: 20, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
           {messages.map((msg, idx) => {
             if (msg.text.startsWith('System Hint:')) return null;
             const timeStr = msg.time ? new Date(msg.time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '';
+            const isAI = msg.sender === 'ai';
             return (
               <motion.div
                 key={idx}
@@ -349,15 +402,19 @@ const MainLayout = () => {
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ duration: 0.25 }}
                 className={msg.sender === 'user' ? 'chat-message chat-user' : 'chat-message chat-ai'}
-                style={msg.isError ? { border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)' } : {}}
+                style={{
+                  ...(msg.isError ? { border: '1px solid rgba(245,158,11,0.3)', background: 'rgba(245,158,11,0.08)' } : {}),
+                  ...(isAI && isELI5 ? { background: 'rgba(254,243,199,0.08)', position: 'relative' } : {})
+                }}
               >
+                {isAI && isELI5 && <span style={{ position: 'absolute', top: -8, right: -8, fontSize: 14 }}>🧸</span>}
                 {msg.text}
                 {timeStr && <div style={{ fontSize: 10, opacity: 0.5, marginTop: 6, textAlign: msg.sender === 'user' ? 'right' : 'left' }}>{timeStr}</div>}
               </motion.div>
             );
           })}
           {isTyping && (
-            <div className="chat-message chat-ai" style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 16px' }}>
+            <div className={isELI5 ? "chat-message chat-ai eli5-chat-ai" : "chat-message chat-ai"} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '12px 16px', ...(isELI5 ? { background: 'rgba(254,243,199,0.08)' } : {}) }}>
               <span className="typing-dot" style={{ '--i': 0 }} />
               <span className="typing-dot" style={{ '--i': 1 }} />
               <span className="typing-dot" style={{ '--i': 2 }} />
@@ -369,7 +426,7 @@ const MainLayout = () => {
         <div style={{ padding: 16, borderTop: '1px solid rgba(59,73,74,0.2)', display: 'flex', gap: 8 }}>
           <Input
             style={{ borderRadius: 9999 }}
-            placeholder="Ask a doubt..."
+            placeholder={isELI5 ? "Ask me anything — I'll explain it simply! 🐥" : "Ask a doubt..."}
             value={chatInput}
             onChange={e => setChatInput(e.target.value)}
             onPressEnter={handleSendMessage}
