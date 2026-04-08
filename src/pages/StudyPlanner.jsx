@@ -190,6 +190,8 @@ const StudyPlanner = () => {
 
   // Update Task
   const handleUpdateTask = async (id, updates, showToast = true) => {
+    if (String(id).startsWith('temp')) return;
+    
     // Map local `completed` to DB `is_completed`
     const dbUpdates = { ...updates };
     if (updates.completed !== undefined) {
@@ -197,40 +199,91 @@ const StudyPlanner = () => {
       dbUpdates.updated_at = new Date().toISOString();
       delete dbUpdates.completed;
     }
-    setTasks(prev => prev.map(t => t.id === id ? { ...t, ...updates } : t));
-    const { error } = await supabase.from('study_tasks').update(dbUpdates).eq('id', id);
-    if (error) toast.error(`Failed to update: ${error.message}`, { id: 'update-error' });
-    else if (showToast) {
-      if (updates.completed) toast.success('Task completed! 🎉 +10 XP');
-      else if (updates.scheduled_date) toast.success(`Rescheduled to ${dayjs(updates.scheduled_date).format('MMM D')}! 📅`);
+
+    let previousTasks;
+    setTasks(prev => {
+      previousTasks = prev;
+      return prev.map(t => t.id === id ? { ...t, ...updates } : t);
+    });
+
+    try {
+      const { error } = await supabase.from('study_tasks').update(dbUpdates).eq('id', id);
+      if (error) throw error;
+      
+      if (showToast) {
+        if (updates.completed === true) toast.success('Task completed! 🎉 +10 XP');
+        else if (updates.completed === false) toast.success('Task moved back to queue. 🔄');
+        else if (updates.scheduled_date) toast.success(`Rescheduled to ${dayjs(updates.scheduled_date).format('MMM D')}! 📅`);
+      }
+    } catch (error) {
+      setTasks(previousTasks);
+      toast.error(`Failed to update: ${error.message || 'Network error'}`, { id: 'update-error' });
     }
   };
 
   // Delete Task
   const handleDeleteTask = async (id) => {
-    setTasks(prev => prev.filter(t => t.id !== id));
-    const { error } = await supabase.from('study_tasks').delete().eq('id', id);
-    if (error) { toast.error(`Failed to delete: ${error.message}`); }
-    else toast.success('Task removed.');
+    if (String(id).startsWith('temp')) {
+      setTasks(prev => prev.filter(t => t.id !== id));
+      return;
+    }
+
+    let previousTasks;
+    setTasks(prev => {
+      previousTasks = prev;
+      return prev.filter(t => t.id !== id);
+    });
+
+    try {
+      const { error } = await supabase.from('study_tasks').delete().eq('id', id);
+      if (error) throw error;
+      toast.success('Task removed.');
+    } catch (error) {
+      setTasks(previousTasks);
+      toast.error(`Failed to delete: ${error.message || 'Network error'}`);
+    }
   };
 
   // Clear All Unscheduled
   const handleClearAllUnscheduled = async () => {
     const ids = tasks.filter(t => !t.scheduled_date && !t.completed).map(t => t.id).filter(id => !String(id).startsWith('temp'));
     if (!ids.length) return;
-    setTasks(prev => prev.filter(t => !(!t.scheduled_date && !t.completed)));
-    const { error } = await supabase.from('study_tasks').delete().in('id', ids);
-    if (error) toast.error(`Error: ${error.message}`);
-    else toast.success('Unscheduled queue cleared.');
+    
+    let previousTasks;
+    setTasks(prev => {
+      previousTasks = prev;
+      return prev.filter(t => !(!t.scheduled_date && !t.completed));
+    });
+
+    try {
+      const { error } = await supabase.from('study_tasks').delete().in('id', ids);
+      if (error) throw error;
+      toast.success('Unscheduled queue cleared.');
+    } catch (error) {
+      setTasks(previousTasks);
+      toast.error(`Error: ${error.message || 'Network error'}`);
+    }
   };
 
   // Clear Completed
   const handleClearCompleted = async () => {
     const ids = tasks.filter(t => t.completed).map(t => t.id).filter(id => !String(id).startsWith('temp'));
     if (!ids.length) return;
-    setTasks(prev => prev.filter(t => !t.completed));
-    await supabase.from('study_tasks').delete().in('id', ids);
-    toast.success('Cleared all completed tasks.');
+
+    let previousTasks;
+    setTasks(prev => {
+      previousTasks = prev;
+      return prev.filter(t => !t.completed);
+    });
+
+    try {
+      const { error } = await supabase.from('study_tasks').delete().in('id', ids);
+      if (error) throw error;
+      toast.success('Cleared all completed tasks.');
+    } catch (error) {
+      setTasks(previousTasks);
+      toast.error(`Error clearing completed: ${error.message || 'Network error'}`);
+    }
   };
 
   // Drag Handlers
@@ -285,8 +338,20 @@ const StudyPlanner = () => {
                   <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.title}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 3, flexShrink: 0 }}>
-                  <CheckCircle2 size={12} color="#10b981" style={{ cursor: 'pointer' }} onClick={(e) => { e.stopPropagation(); handleUpdateTask(item.id, { completed: true }); }} />
-                  <Trash2 size={11} color="#ef4444" style={{ cursor: 'pointer', opacity: 0.6 }} onClick={(e) => { e.stopPropagation(); handleDeleteTask(item.id); }} />
+                  <CheckCircle2 
+                    size={12} 
+                    color="#10b981" 
+                    style={{ cursor: 'pointer' }} 
+                    data-testid={`complete-btn-${item.id}`}
+                    onClick={(e) => { e.stopPropagation(); handleUpdateTask(item.id, { completed: true }); }} 
+                  />
+                  <Trash2 
+                    size={11} 
+                    color="#ef4444" 
+                    style={{ cursor: 'pointer', opacity: 0.6 }} 
+                    data-testid={`delete-btn-${item.id}`}
+                    onClick={(e) => { e.stopPropagation(); handleDeleteTask(item.id); }} 
+                  />
                 </div>
               </li>
             </DraggableTask>
@@ -421,14 +486,29 @@ const StudyPlanner = () => {
                     <Button danger type="text" onClick={handleClearCompleted} style={{ marginBottom: 12, display: 'flex', alignItems: 'center', gap: 7, fontSize: 13 }}>
                       <Trash2 size={14} /> Clear completed
                     </Button>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }} className="completed-list">
                       {completedTasks.map(t => (
                         <div key={t.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'rgba(16,185,129,0.05)', borderRadius: 10, border: '1px solid rgba(16,185,129,0.15)' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <CheckCircle size={13} color="#10b981" />
+                            <CheckCircle 
+                              size={13} 
+                              color="#10b981" 
+                              style={{ cursor: 'pointer' }} 
+                              data-testid={`uncomplete-btn-${t.id}`}
+                              onClick={() => handleUpdateTask(t.id, { completed: false })} 
+                            />
                             <span style={{ textDecoration: 'line-through', color: 'var(--on-surface-muted)', fontSize: 13 }}>{t.title}</span>
                           </div>
-                          <span style={{ fontSize: 10, color: 'var(--on-surface-muted)', background: 'rgba(16,185,129,0.1)', padding: '2px 7px', borderRadius: 9999 }}>Done</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <span style={{ fontSize: 10, color: 'var(--on-surface-muted)', background: 'rgba(16,185,129,0.1)', padding: '2px 7px', borderRadius: 9999 }}>Done</span>
+                            <Trash2 
+                              size={12} 
+                              color="#ef4444" 
+                              style={{ cursor: 'pointer', opacity: 0.6 }} 
+                              data-testid={`delete-completed-btn-${t.id}`}
+                              onClick={() => handleDeleteTask(t.id)} 
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -519,7 +599,13 @@ const StudyPlanner = () => {
                               <div className="mobile-only" onClick={() => { setMobileTaskSelected(item); setIsMobileModalVisible(true); }} style={{ padding: 4, background: 'rgba(0,216,214,0.1)', borderRadius: 6, color: '#00D8D6', cursor: 'pointer' }}>
                                 <CalendarIcon size={14} />
                               </div>
-                              <Trash2 size={13} color="#ef4444" style={{ cursor: 'pointer', opacity: 0.6, transition: 'opacity 0.15s' }} onClick={() => handleDeleteTask(item.id)} />
+                              <Trash2 
+                                size={13} 
+                                color="#ef4444" 
+                                style={{ cursor: 'pointer', opacity: 0.6, transition: 'opacity 0.15s' }} 
+                                data-testid={`delete-btn-${item.id}`}
+                                onClick={() => handleDeleteTask(item.id)} 
+                              />
                             </div>
                           </div>
                         </DraggableTask>
