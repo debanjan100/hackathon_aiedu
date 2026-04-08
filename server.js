@@ -165,6 +165,30 @@ Keep the review concise and educational.`;
   }
 });
 
+app.post('/api/narrate-step', async (req, res) => {
+  try {
+    const { algorithm, stepIndex, totalSteps, stepData, array } = req.body || {};
+    const SYSTEM = `You are an engaging DSA teacher explaining algorithm steps to a student.
+For the given algorithm step, write a 1-2 sentence plain-English narration that:
+1. Says WHAT is happening at this exact step (mention specific indices and values)
+2. Says WHY (what rule/condition triggered this action)
+Keep it conversational, use "we" language. No markdown. Max 40 words.
+Examples:
+- "We compare index 2 (value: 34) and index 3 (value: 7). Since 34 > 7, we swap them to move the larger element rightward."
+- "Index 0 (value: 11) is already in the right place — it's the smallest remaining element so we mark it as sorted."`;
+    const prompt =
+      `Algorithm: ${algorithm || ''}\n` +
+      `Step: ${(Number(stepIndex) || 0) + 1} of ${Number(totalSteps) || 0}\n` +
+      `Array: ${Array.isArray(array) ? JSON.stringify(array) : 'N/A'}\n` +
+      `StepData: ${JSON.stringify(stepData || {}).slice(0, 1200)}\n` +
+      `Write the narration now.`;
+    const narration = await askAI(prompt, SYSTEM, 120);
+    res.json({ narration });
+  } catch (err) {
+    res.json({ narration: 'We examine the highlighted elements and apply the algorithm’s rule to progress toward the goal.' });
+  }
+});
+
 app.post('/api/triage-complaint', async (req, res) => {
   try {
     const { category, severity, title, description, screenshotCount, email } = req.body || {};

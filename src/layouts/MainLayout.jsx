@@ -21,6 +21,7 @@ const NAV_ITEMS = [
   { key: '/dashboard/planner',     icon: <Calendar size={16} />,        label: 'Study Planner'   },
   { key: '/dashboard/practice',    icon: <Code size={16} />,            label: 'Practice Room'   },
   { key: '/dashboard/resume-scanner', icon: <FileText size={16} />,     label: 'Résumé Scanner'  },
+  { key: '/visualizer',            icon: <Play size={16} />,            label: '🎬 Visualizer'   },
   { key: '/dashboard/videos',      icon: <Video size={16} />,           label: 'Learning Videos' },
   { key: '/dashboard/resources',   icon: <BookOpen size={16} />,        label: 'Resources'       },
   { key: '/dashboard/analytics',   icon: <BarChart2 size={16} />,       label: 'Analytics'       },
